@@ -107,28 +107,23 @@ function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool
 
 // addEventListener
 function addEventToCartBtn() {
-  const addCartBtn = document.querySelectorAll(".addCartBtn");
-  addCartBtn.forEach(item => {
-    item.addEventListener("click", e => {
-      if(!e.target.getAttribute('class').includes("addCartBtn")) return;
+  productList.addEventListener("click", e => {
+    if(e.target.getAttribute('class').includes("addCartBtn")) {
       addCartItem(e.target.dataset.id);
-    });
+    }
   });
 }
 
-function addEventToDeleteBtn() {
-  let delCardBtn = document.querySelectorAll(".discardBtn");
-  delCardBtn.forEach(item => {
-    item.addEventListener("click", e => {
-      if(!e.target.parentNode.getAttribute('class').includes("discardBtn")) return;
+function addEventToCartEdit() { 
+  cartList.addEventListener("click", e => {
+    console.log(e.target);
+    // delete cart item
+    if (e.target.textContent === 'clear' && e.target.dataset.id) {
       deleteCartItem(e.target.dataset.id);
-    });
+    } else if(e.target.getAttribute('class').includes("discardAllBtn")) {
+      deleteAllCartList();
+    }
   });
-}
-
-function addEventToDeleteAllBtn() {
-  const delCardAllBtn = document.querySelector(".discardAllBtn");
-  delCardAllBtn.addEventListener("click", deleteAllCartList);
 }
 
 function addEventToEditQuantity() {
@@ -244,6 +239,8 @@ function renderCategorySelect(categories) {
     `;
   });
   productSelect.innerHTML = productSelectStr;
+  // select change
+  productSelect.addEventListener("change", changeCategorySelect);
 }
 
 function generateProduct(id, imgUrl, title, originPrice, price) {
@@ -271,8 +268,7 @@ function renderProduct(data) {
   searchNum.textContent = `${data.length}`;
   productList.innerHTML = productStr;
   addEventToCartBtn();
-  // select change
-  productSelect.addEventListener("change", changeCategorySelect);
+  
   return categories;
 }
 
@@ -306,7 +302,7 @@ function renderCart(data) {
   cartsData = data;
   if (data.carts.length) {
     data.carts.forEach( item => {
-      amountPrice = item.quantity * item.product.price;
+      let amountPrice = item.quantity * item.product.price;
       totalPrice += amountPrice;
       cartStr += generateCart(item.id, item.category, item.product.images, item.product.title, item.product.price, item.quantity, amountPrice);
     });
@@ -331,8 +327,7 @@ function renderCart(data) {
           <td class="total-price">${totalPrice.toLocaleString()}</td>
       </tr>
     ` ;
-    addEventToDeleteBtn();
-    addEventToDeleteAllBtn();
+    addEventToCartEdit();
     addEventToSubQuantity();
     addEventToEditQuantity();
     addEventToAddQuantity();
