@@ -62,6 +62,7 @@ function deleteAllCartList() {
 
 // 編輯購物車
 function editCartItem(cartId, quantity) {
+  console.log(cartId, quantity);
   axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, 
     {
       "data": {
@@ -75,8 +76,7 @@ function editCartItem(cartId, quantity) {
       }
     })
     .then(function (response) {
-      console.log(response.data);
-      // renderCart(response.data);
+      renderCart(response.data);
     })
 }
 
@@ -116,73 +116,25 @@ function addEventToCartBtn() {
 
 function addEventToCartEdit() { 
   cartList.addEventListener("click", e => {
-    console.log(e.target);
-    // delete cart item
     if (e.target.textContent === 'clear' && e.target.dataset.id) {
       deleteCartItem(e.target.dataset.id);
-    } else if(e.target.getAttribute('class').includes("discardAllBtn")) {
+    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("discardAllBtn")) {
       deleteAllCartList();
+    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("cart-quantity")) {
+      e.target.addEventListener('blur', editCartQuantity);
+      e.target.addEventListener('keydown', function(e){
+        // set Enter key as edit Cart
+        if (e.keyCode === 13) {
+          editCartQuantity(e);
+          e.target.blur();
+        }
+      }, false);
+    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-sub")) {
+      editCartQuantity(e);
+    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-add")) {
+      editCartQuantity(e);
     }
   });
-}
-
-function addEventToEditQuantity() {
-  const delCardBtn = document.querySelectorAll(".discardBtn");
-  const editQuantityBtn = document.querySelectorAll(".cart-quantity");
-  const cartPriceAmount = document.querySelectorAll(".cart-price-amount");
-
-  for(let i=0; i<editQuantityBtn.length; i++) {
-    editQuantityBtn[i].addEventListener("change", function() {
-      if(!editQuantityBtn[i].getAttribute('class').includes("cart-quantity")) return;
-      let value = Number(editQuantityBtn[i].value);
-      // remove focus
-      editQuantityBtn[i].blur();
-      console.log(value);
-      if (!value) {
-        deleteCartItem(delCardBtn[i].firstChild.dataset.id);
-      } else {
-        editCartItem(delCardBtn[i].firstChild.dataset.id, value);
-        changeCartPriceAmount(delCardBtn[i].firstChild.dataset.id, cartPriceAmount[i], cartPriceAmount[i].dataset.price, value);
-      }
-    });
-  }
-}
-
-function addEventToSubQuantity() {
-  const delCardBtn = document.querySelectorAll(".discardBtn");
-  const editQuantityBtn = document.querySelectorAll(".cart-quantity");
-  const subQuantityBtn = document.querySelectorAll(".quantity-sub");
-  const cartPriceAmount = document.querySelectorAll(".cart-price-amount");
-
-  for(let i=0; i<subQuantityBtn.length; i++) {
-    subQuantityBtn[i].addEventListener("click", function() {
-      if(!subQuantityBtn[i].getAttribute('class').includes("quantity-sub")) return;
-      let value = Number(editQuantityBtn[i].value) - 1;
-      if (editQuantityBtn[i].value == 1) {
-        deleteCartItem(delCardBtn[i].firstChild.dataset.id);
-      } else {
-        editCartItem(delCardBtn[i].firstChild.dataset.id, value);
-        editQuantityBtn[i].value = value;
-        changeCartPriceAmount(delCardBtn[i].firstChild.dataset.id, cartPriceAmount[i], cartPriceAmount[i].dataset.price, value);
-      }
-    });
-  }
-}
-function addEventToAddQuantity() {
-  const delCardBtn = document.querySelectorAll(".discardBtn");
-  const editQuantityBtn = document.querySelectorAll(".cart-quantity");
-  const addQuantityBtn = document.querySelectorAll(".quantity-add");
-  const cartPriceAmount = document.querySelectorAll(".cart-price-amount");
-
-  for(let i=0; i<addQuantityBtn.length; i++) {
-    addQuantityBtn[i].addEventListener("click", function() {
-      if(!addQuantityBtn[i].getAttribute('class').includes("quantity-add")) return;
-      let value = Number(editQuantityBtn[i].value) + 1;
-      editCartItem(delCardBtn[i].firstChild.dataset.id, value);
-      editQuantityBtn[i].value = value;
-      changeCartPriceAmount(delCardBtn[i].firstChild.dataset.id, cartPriceAmount[i], cartPriceAmount[i].dataset.price, value);
-    });
-  }
 }
 
 // 取得數量
@@ -191,9 +143,7 @@ function getProductQuantity(cartId) {
     try {
       cartsData.carts.forEach(item => {
         if(item.product.id === cartId){
-          console.log(retQuantity);
           retQuantity = item.quantity + 1;
-          console.log(retQuantity);
           throw {};
         }
       });
@@ -201,6 +151,25 @@ function getProductQuantity(cartId) {
       console.log(e);
     }
   return retQuantity;
+}
+
+function editCartQuantity(e) {
+  let itemId = e.target.parentNode.parentNode.parentNode.children[4].firstChild.dataset.id;
+  let itemNum = 0;
+
+  if (e.target.getAttribute('class').includes('cart-quantity')) {
+    itemNum = Number(e.target.value);
+  } else if (e.target.getAttribute('class').includes('quantity-sub')) {
+    itemNum = Number(e.target.parentNode.children[1].value) - 1;
+  } else if (e.target.getAttribute('class').includes('quantity-add')) {
+    itemNum = Number(e.target.parentNode.children[1].value) + 1;
+  }
+
+  if (!itemNum) {
+    deleteCartItem(itemId);
+  } else {
+    editCartItem(itemId, itemNum);
+  }
 }
 
 function changeCategorySelect(e) {
@@ -212,23 +181,7 @@ function changeCategorySelect(e) {
     filterData = productsData.filter((item) => item.category === value);
   }
   searchNum.textContent = `${filterData.length}`;
-  productSelect.value = value;
   renderProduct(filterData);
-}
-
-// FIXME: addCart
-
-function changeTotalPrice(oldNum, newNum, price) {
-  const totalPrice = document.querySelector(".total-price");
-  cartsData.finalTotal += (newNum - oldNum) * price;
-  totalPrice.textContent = cartsData.finalTotal.toLocaleString();
-}
-
-function changeCartPriceAmount(cartId, item, price, num) {
-  var indexCartsData = cartsData.carts.findIndex( element => element.id === cartId);
-  changeTotalPrice(cartsData.carts[indexCartsData].quantity, num, price);
-  cartsData.carts[indexCartsData].quantity = num;
-  item.textContent = (price * num).toLocaleString();
 }
 
 function renderCategorySelect(categories) {
@@ -328,9 +281,6 @@ function renderCart(data) {
       </tr>
     ` ;
     addEventToCartEdit();
-    addEventToSubQuantity();
-    addEventToEditQuantity();
-    addEventToAddQuantity();
   } else {
     cartList.innerHTML = `
       <div class="empty-cart" id="empty-cart">
