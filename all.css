@@ -869,6 +869,7 @@ button:disabled {
 .cart-quantity {
   width: 40px;
   text-align:center;
+  vertical-align: top;
   border: 0;
   font-size: 20px;
 }

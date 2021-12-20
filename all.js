@@ -154,7 +154,7 @@ function getProductQuantity(cartId) {
 }
 
 function editCartQuantity(e) {
-  let itemId = e.target.parentNode.parentNode.parentNode.children[4].firstChild.dataset.id;
+  let itemId = e.target.parentNode.parentNode.children[4].firstChild.dataset.id;
   let itemNum = 0;
 
   if (e.target.getAttribute('class').includes('cart-quantity')) {
@@ -236,12 +236,10 @@ function generateCart(id, category, imgUrl, title, price, quantity, totalPrice) 
             </div>
         </td>
         <td>${price.toLocaleString()}</td>
-        <td class="">
-          <div class="cart-quantity-edit">
-            <button class="material-icons quantity-sub">remove</button>
-            <input type="text" class="cart-quantity" placeholder="00" aria-label="01" value="${quantity}">
-            <button class="material-icons quantity-add">add</button>
-          </div>
+        <td>
+          <button class="material-icons quantity-sub">remove</button>
+          <input type="text" class="cart-quantity" placeholder="00" aria-label="01" value="${quantity}">
+          <button class="material-icons quantity-add">add</button>
         </td>
         <td class="cart-price-amount" data-price=${price}>${totalPrice.toLocaleString()}</td>
         <td class="discardBtn"><a href="javascript:void(0);" class="material-icons" data-id=${id}>clear</a></td>
