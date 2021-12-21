@@ -32,11 +32,11 @@ function getCartList() {
 }
 
 // 加入購物車
-function addCartItem(productId) {
+function addCartItem(productId, quantity) {
   axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, {
     "data": {
       "productId": productId,
-      "quantity": getProductQuantity(productId)
+      "quantity": quantity
     }
   }).
     then(function (response) {
@@ -62,7 +62,6 @@ function deleteAllCartList() {
 
 // 編輯購物車
 function editCartItem(cartId, quantity) {
-  console.log(cartId, quantity);
   axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, 
     {
       "data": {
@@ -109,7 +108,7 @@ function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
     if(e.target.getAttribute('class').includes("addCartBtn")) {
-      addCartItem(e.target.dataset.id);
+      addCartItem(e.target.dataset.id, getProductQuantity(productId));
     }
   });
 }
@@ -130,9 +129,9 @@ function addEventToCartEdit() {
         }
       }, false);
     } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-sub")) {
-      editCartQuantity(e);
+      editCartQuantity(e, -1);
     } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-add")) {
-      editCartQuantity(e);
+      editCartQuantity(e, +1);
     }
   });
 }
@@ -153,22 +152,20 @@ function getProductQuantity(cartId) {
   return retQuantity;
 }
 
-function editCartQuantity(e) {
-  let itemId = e.target.parentNode.parentNode.children[4].firstChild.dataset.id;
-  let itemNum = 0;
-
-  if (e.target.getAttribute('class').includes('cart-quantity')) {
-    itemNum = Number(e.target.value);
-  } else if (e.target.getAttribute('class').includes('quantity-sub')) {
-    itemNum = Number(e.target.parentNode.children[1].value) - 1;
-  } else if (e.target.getAttribute('class').includes('quantity-add')) {
-    itemNum = Number(e.target.parentNode.children[1].value) + 1;
+function editCartQuantity(e, constNum=0) {
+  let itemIndex = e.target.parentNode.dataset.index;
+  let itemId = cartsData.carts[itemIndex].id;
+  let itemNewQuantity = Number(e.target.parentNode.querySelector('.cart-quantity').value) + constNum;
+  let itemOldQuantity = Number(cartsData.carts[itemIndex].quantity);
+  
+  if (itemNewQuantity === itemOldQuantity ) { 
+    return;
   }
-
-  if (!itemNum) {
+  
+  if (!itemNewQuantity) {
     deleteCartItem(itemId);
   } else {
-    editCartItem(itemId, itemNum);
+    editCartItem(itemId, itemNewQuantity);
   }
 }
 
@@ -192,7 +189,6 @@ function renderCategorySelect(categories) {
     `;
   });
   productSelect.innerHTML = productSelectStr;
-  // select change
   productSelect.addEventListener("change", changeCategorySelect);
 }
 
@@ -203,8 +199,8 @@ function generateProduct(id, imgUrl, title, originPrice, price) {
       <img src="${imgUrl}" alt="">
       <a href="javascript:void(0);" class="addCartBtn" data-id=${id}>加入購物車</a>
       <h3>${title}</h3>
-      <del class="originPrice">${originPrice.toLocaleString()}</del>
-      <p class="nowPrice">${price.toLocaleString()}</p>
+      <del class="originPrice">NT$${originPrice.toLocaleString()}</del>
+      <p class="nowPrice">NT$${price.toLocaleString()}</p>
     </li>
   `;
 }
@@ -226,7 +222,7 @@ function renderProduct(data) {
 }
 
 // TODO: cart edit
-function generateCart(id, category, imgUrl, title, price, quantity, totalPrice) {
+function generateCart(id, index, category, imgUrl, title, price, quantity, totalPrice) {
   return `
     <tr>
         <td>
@@ -235,13 +231,13 @@ function generateCart(id, category, imgUrl, title, price, quantity, totalPrice) 
                 <p>${title}</p>
             </div>
         </td>
-        <td>${price.toLocaleString()}</td>
-        <td>
+        <td>NT$${price.toLocaleString()}</td>
+        <td data-index=${index} style="font-size: 0;">
           <button class="material-icons quantity-sub">remove</button>
           <input type="text" class="cart-quantity" placeholder="00" aria-label="01" value="${quantity}">
           <button class="material-icons quantity-add">add</button>
         </td>
-        <td class="cart-price-amount" data-price=${price}>${totalPrice.toLocaleString()}</td>
+        <td>NT$${totalPrice.toLocaleString()}</td>
         <td class="discardBtn"><a href="javascript:void(0);" class="material-icons" data-id=${id}>clear</a></td>
     </tr>
   `;
@@ -252,10 +248,10 @@ function renderCart(data) {
   let totalPrice = 0;
   cartsData = data;
   if (data.carts.length) {
-    data.carts.forEach( item => {
+    data.carts.forEach( (item, index) => {
       let amountPrice = item.quantity * item.product.price;
       totalPrice += amountPrice;
-      cartStr += generateCart(item.id, item.category, item.product.images, item.product.title, item.product.price, item.quantity, amountPrice);
+      cartStr += generateCart(item.id, index, item.category, item.product.images, item.product.title, item.product.price, item.quantity, amountPrice);
     });
     cartList.innerHTML = `
       <tr>
@@ -275,10 +271,9 @@ function renderCart(data) {
           <td>
               <p>總金額</p>
           </td>
-          <td class="total-price">${totalPrice.toLocaleString()}</td>
+          <td class="total-price">NT$${totalPrice.toLocaleString()}</td>
       </tr>
     ` ;
-    addEventToCartEdit();
   } else {
     cartList.innerHTML = `
       <div class="empty-cart" id="empty-cart">
@@ -368,6 +363,7 @@ function clearForm(formData) {
 function init() {
   getProductList();
   getCartList();
+  addEventToCartEdit();
 }
 
 init();
