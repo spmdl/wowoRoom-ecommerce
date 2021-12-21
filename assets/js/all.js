@@ -42,7 +42,7 @@ function addCartItem(itemData) {
 }
 
 // 刪除購物車內特定產品
-function deleteCartItem(cartId) {
+const deleteCartItem = function(cartId) {
   axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cartId}`).
     then(function (response) {
       renderCart(response.data);
@@ -110,26 +110,28 @@ function addEventToCartBtn() {
   });
 }
 
+function addInputEventToCartEdit(e) {
+  e.target.addEventListener('blur', editCartQuantity);
+  e.target.addEventListener('keydown', function(e){
+    // set Enter key as edit Cart
+    if (e.keyCode === 13) {
+      editCartQuantity(e);
+      e.target.blur();
+    }
+  }, false);
+}
+
 function addEventToCartEdit() { 
   cartList.addEventListener("click", e => {
-    if (e.target.textContent === 'clear' && e.target.dataset.id) {
-      deleteCartItem(e.target.dataset.id);
-    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("discardAllBtn")) {
-      deleteAllCartList();
-    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("cart-quantity")) {
-      e.target.addEventListener('blur', editCartQuantity);
-      e.target.addEventListener('keydown', function(e){
-        // set Enter key as edit Cart
-        if (e.keyCode === 13) {
-          editCartQuantity(e);
-          e.target.blur();
-        }
-      }, false);
-    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-sub")) {
-      editCartQuantity(e, -1);
-    } else if (e.target.getAttribute('class') && e.target.getAttribute('class').includes("quantity-add")) {
-      editCartQuantity(e, +1);
-    }
+    if (!e.target.getAttribute('class')) { return; }
+    const cartEditListener = {
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && deleteAllCartList(),
+      'discardBtn': e.target.getAttribute('class').includes('discardBtn') && deleteCartItem(e.target.dataset.id),
+      'quantity-sub': e.target.getAttribute('class').includes('quantity-sub') && editCartQuantity(e, -1),
+      'cart-quantity': e.target.getAttribute('class').includes('cart-quantity') && addInputEventToCartEdit(e),
+      'quantity-add': e.target.getAttribute('class').includes('quantity-add') && editCartQuantity(e, 1),
+    };
+    cartEditListener[e.target.getAttribute('class')];
   });
 }
 
@@ -231,7 +233,7 @@ function generateCart(id, index, category, imgUrl, title, price, quantity, total
           <button class="material-icons quantity-add">add</button>
         </td>
         <td>NT$${totalPrice.toLocaleString()}</td>
-        <td class="discardBtn"><a href="javascript:void(0);" class="material-icons" data-id=${id}>clear</a></td>
+        <td style="text-align: right;"><a href="javascript:void(0);" class="material-icons discardBtn" data-id=${id}>clear</a></td>
     </tr>
   `;
 }
