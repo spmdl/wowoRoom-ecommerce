@@ -32,12 +32,9 @@ function getCartList() {
 }
 
 // 加入購物車
-function addCartItem(productId, quantity) {
+function addCartItem(itemData) {
   axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, {
-    "data": {
-      "productId": productId,
-      "quantity": quantity
-    }
+    "data": itemData
   }).
     then(function (response) {
       renderCart(response.data);
@@ -107,8 +104,8 @@ function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool
 // addEventListener
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
-    if(e.target.getAttribute('class').includes("addCartBtn")) {
-      addCartItem(e.target.dataset.id, getProductQuantity(productId));
+    if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
+      addCartItem(getCartItemData(e));
     }
   });
 }
@@ -136,20 +133,16 @@ function addEventToCartEdit() {
   });
 }
 
-// 取得數量
-function getProductQuantity(cartId) {
-  let retQuantity = 1;
-    try {
-      cartsData.carts.forEach(item => {
-        if(item.product.id === cartId){
-          retQuantity = item.quantity + 1;
-          throw {};
-        }
-      });
-    } catch (e) {
-      console.log(e);
-    }
-  return retQuantity;
+function getCartItemData(e) {
+  let productId = e.target.dataset.id;
+  let productIndex = cartsData.carts.findIndex(function(item) {
+    return item.product.id == productId
+  });
+  let constQuantity = productIndex === -1 ? 1 : Number(cartsData.carts[productIndex].quantity) + 1; 
+  return {
+    "productId": productId,
+    "quantity": constQuantity
+  };
 }
 
 function editCartQuantity(e, constNum=0) {
