@@ -3,11 +3,11 @@ import * as c3 from './modules/c3.js';
 // token data
 const api_path = "kent";
 const token = "tuOllAmACSQgpHpqMpD8LCKgzIH3";
-const orderList = document.querySelector(".orderPage-table");
-const orderListWrap = document.querySelector(".orderTableWrap");
+const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
-const chartDom = document.getElementById("chart")
+const orderList = document.querySelector(".orderPage-list");
 let cartsData = [];
+let chartColumns = {};
 
 function getOrderList() {
   axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
@@ -18,6 +18,7 @@ function getOrderList() {
     })
     .then(function (response) {
       renderOrder(response.data.orders);
+      c3.reload(chartColumns);
     })
     .catch((err) => { console.error(err) });
 }
@@ -31,6 +32,7 @@ function deleteAllOrder() {
     })
     .then(function (response) {
       renderOrder(response.data.orders);
+      c3.reload(chartColumns);
     })
     .catch((err) => { console.error(err) });
 }
@@ -44,71 +46,65 @@ function deleteOrderItem(orderId) {
     })
     .then(function (response) {
       renderOrder(response.data.orders);
+      c3.reload(chartColumns);
     })
     .catch((err) => { console.error(err) });
 }
 
-// addEventListener
-function addEventToDeleteBtn() {
-  const delOrderBtn = document.querySelectorAll(".delSingleOrder-Btn");
-  delOrderBtn.forEach(item => {
-    item.addEventListener("click", e => {
-      e.preventDefault();
-      if(e.target.getAttribute('class') !== "delSingleOrder-Btn"){
-        return
+function editOrderList(orderId, orderStatus) {
+  axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
+    {
+      "data": {
+        "id": orderId,
+        "paid": orderStatus
       }
-      deleteOrderItem(e.target.dataset.id);
-    });
-  });
+    },
+    {
+      headers: {
+        'Authorization': token
+      }
+    })
+    .then(function (response) {
+      renderOrder(response.data.orders);
+    })
 }
 
-function addEventToDeleteAllBtn() {
-  delAllOrderBtn.addEventListener("click", function() {
-    if (cartsData.length) {
+function addEventToOrderEdit() {
+  orderList.addEventListener("click", e => {
+    if (!e.target.getAttribute('class')) { return; }
+    if (e.target.getAttribute('class').includes('delSingleOrder-Btn')) {
+      deleteOrderItem(e.target.dataset.id);
+    } else if (e.target.getAttribute('class').includes('discardAllBtn')) {
       deleteAllOrder();
+    } else if (e.target.getAttribute('class').includes('orderStatus-not') || e.target.getAttribute('class').includes('orderStatus-done')) {
+      changeOrderPaid(e.target.dataset.index);
     }
   });
 }
 
-function renderOrder(data) {
-  let chartColumns = {};
-  let orderStr = `
-    <thead>
-      <tr>
-          <th>訂單編號</th>
-          <th>聯絡人</th>
-          <th>聯絡電話</th>
-          <th>聯絡地址</th>
-          <th>電子郵件</th>
-          <th>訂單品項</th>
-          <th>訂單日期</th>
-          <th>訂單狀態</th>
-          <th>操作</th>
-      </tr>
-    </thead>    
-  `;
-  let datoSort = data.sort((a, b) => { return b.createdAt - a.createdAt });
-  cartsData = data;
-  if (data.length) {
-    datoSort.forEach( item => {
-      const time = new Date(item.createdAt * 1000);
-      let tempOrderHtml = generateOrder(item.id, item.user.name, item.user.tel, item.user.address, item.user.email, item.products[0].title, time.toLocaleDateString(), time.toLocaleTimeString(), item.paid);
-      // count price for chart
-      chartColumns[item.products[0].title] = chartColumns[item.products[0].title] ? (chartColumns[item.products[0].title] + item.products[0].quantity * item.products[0].price) : (item.products[0].quantity * item.products[0].price);
-      orderStr += tempOrderHtml;
-    });
-    orderList.innerHTML = orderStr;
-    delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
-    addEventToDeleteBtn();  
-    renderChart(chartColumns);
-  } else {
-    orderList.innerHTML = "";
-    delAllOrderBtn.textContent = `加油別氣餒，再加把勁就有訂單了 ༼•̃͡ ɷ•̃͡༽`;
-    renderChart(chartColumns);
+function processOrderSort(type, data) {
+  const sortType = {
+    'desc': data.sort((a, b) => { return b.createdAt - a.createdAt })
+  }
+  return sortType[type];
+}
+
+function changeOrderPaid(index) {
+  editOrderList(cartsData[index].id, !cartsData[index].paid, index);
+  if (cartsData[index].paid) {
+
   }
 }
 
-function generateOrder(id, userName, userTel, userAddress, userEmail, productTitle, productDate, productTime, paid) {
+function setChartColumns(chartColumns, item) {
+  if (chartColumns[item.products[0].title]) {
+    chartColumns[item.products[0].title] = chartColumns[item.products[0].title] + item.products[0].quantity * item.products[0].price
+  } else {
+    chartColumns[item.products[0].title] = item.products[0].quantity * item.products[0].price
+  }
+}
+
+function generateOrder(id, index, userName, userTel, userAddress, userEmail, productTitle, productDate, productTime, paid) {
   return `
   <tr>
     <td>${id}</td>
@@ -124,7 +120,7 @@ function generateOrder(id, userName, userTel, userAddress, userEmail, productTit
       <p>${productTime}</p>
     </td>
     <td class="orderStatus">
-      <a href="javascript:void(0);">${paid ? "以處理" : "未處理"}</a>
+      <a href="javascript:void(0);" data-index=${Number(index)} class="${paid ? 'orderStatus-done' : 'orderStatus-not'}">${paid ? "已處理" : "未處理"}</a>
     </td>
     <td>
       <input type="button" class="delSingleOrder-Btn" value="刪除" data-id=${id}>
@@ -133,37 +129,45 @@ function generateOrder(id, userName, userTel, userAddress, userEmail, productTit
   `
 }
 
-function renderChart(columns) {
-  if (chartDom.getAttribute("class") && !cartsData.length) {
+function renderOrder(data) {
+  if (!data.length) {
+    orderList.innerHTML = `
+      <div class="empty-cart">
+        <p> 加油別氣餒，再加把勁就有訂單了 ༼•̃͡ ɷ•̃͡༽ </p>
+      </div>
+    ` ;
     c3.destroy();
-  } else {
-    c3.reload(columns);
+    return;
   }
+  cartsData = data;
+  let tempOrderStr = `
+    <thead>
+      <tr>
+          <th>訂單編號</th>
+          <th>聯絡人</th>
+          <th>聯絡電話</th>
+          <th>聯絡地址</th>
+          <th>電子郵件</th>
+          <th>訂單品項</th>
+          <th>訂單日期</th>
+          <th>訂單狀態</th>
+          <th>操作</th>
+      </tr>
+    </thead>
+  `;
+  let dataSort = processOrderSort('desc', cartsData);
+  dataSort.forEach( (item, index) => {
+    const time = new Date(item.createdAt * 1000);
+    setChartColumns(chartColumns, item);
+    tempOrderStr += generateOrder(item.id, index, item.user.name, item.user.tel, item.user.address, item.user.email, item.products[0].title, time.toLocaleDateString(), time.toLocaleTimeString(), item.paid);
+  });
+  delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
+  orderTable.innerHTML = tempOrderStr;
 }
 
 function init() {
   getOrderList();
-  addEventToDeleteAllBtn();
+  addEventToOrderEdit();
 }
 
 init();
-
-// ........................
-// 修改訂單狀態
-function editOrderList(orderId) {
-  axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      "data": {
-        "id": orderId,
-        "paid": true
-      }
-    },
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      console.log(response.data);
-    })
-}

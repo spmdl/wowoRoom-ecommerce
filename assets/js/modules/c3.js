@@ -25,6 +25,7 @@ export function destroy() {
 
 export function reload(columns) {
   chart.load({
+    unload: true,
     columns: processColumnData(columns),
   });
 }
