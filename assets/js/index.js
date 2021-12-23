@@ -249,25 +249,29 @@ function renderCart(data) {
       cartStr += generateCart(item.id, index, item.category, item.product.images, item.product.title, item.product.price, item.quantity, amountPrice);
     });
     cartList.innerHTML = `
-      <tr>
-        <th width="40%">品項</th>
-        <th width="15%">單價</th>
-        <th width="15%">數量</th>
-        <th width="15%">金額</th>
-        <th width="15%"></th>
-      </tr>
+      <thead>
+        <tr>
+          <th width="40%">品項</th>
+          <th width="15%">單價</th>
+          <th width="15%">數量</th>
+          <th width="15%">金額</th>
+          <th width="15%"></th>
+        </tr>
+      </thead>
       ${cartStr}
-      <tr>
-          <td>
-              <a href="javascript:void(0);" class="discardAllBtn">刪除所有品項</a>
-          </td>
-          <td></td>
-          <td></td>
-          <td>
-              <p>總金額</p>
-          </td>
-          <td class="total-price">NT$${totalPrice.toLocaleString()}</td>
-      </tr>
+      <tfoot>
+        <tr>
+            <td>
+                <a href="javascript:void(0);" class="discardAllBtn">刪除所有品項</a>
+            </td>
+            <td></td>
+            <td></td>
+            <td>
+                <p>總金額</p>
+            </td>
+            <td class="total-price">NT$${totalPrice.toLocaleString()}</td>
+        </tr>
+      </tfoot>
     ` ;
   } else {
     cartList.innerHTML = `
