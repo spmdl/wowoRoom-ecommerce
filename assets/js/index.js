@@ -6,7 +6,6 @@ let searchNum = document.querySelector(".searchNum");
 const cartList = document.querySelector(".shoppingCart-table");
 const productList = document.querySelector(".productWrap");
 const creatOrderBtn = document.querySelector(".orderInfo-btn");
-const emptyCart = document.getElementById("empty-cart");
 let productsData = [];
 let cartsData = [];
 
@@ -275,7 +274,7 @@ function renderCart(data) {
     ` ;
   } else {
     cartList.innerHTML = `
-      <div class="empty-cart" id="empty-cart">
+      <div class="empty-cart">
         <p> 親(≧▽≦) 新品剛上市有折扣，快加入購物車吧 ٩(๑❛ᴗ❛๑)۶</p>
       </div>
     ` ;

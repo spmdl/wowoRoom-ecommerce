@@ -768,6 +768,7 @@ body {
 .orderPage-table th, .orderPage-table td {
   padding: 10px;
   text-align: left;
+  vertical-align: middle;
   border: 1px solid #000000;
 }
 
@@ -797,9 +798,12 @@ body {
 }
 
 .orderStatus a {
-  padding: 10px;
+  padding: 5px 10px;
   display: block;
-  color: #0067CE;
+  text-decoration: none;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .orderTableWrap {
@@ -814,3 +818,23 @@ body {
   display: none;
 }
 /*# sourceMappingURL=all.css.map */
+
+.empty-cart {
+  text-align: center;
+  font-size: 30px;
+  color: #cccccc;
+}
+
+.orderStatus {
+  text-align: center !important;
+}
+
+.orderStatus-done {
+  background-color: #ced4da;
+  color: #000000;
+}
+
+.orderStatus-not {
+  background-color: #6a33f8;
+  color: #ffffff;
+}

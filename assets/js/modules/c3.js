@@ -25,12 +25,15 @@ export function destroy() {
 
 export function reload(columns) {
   chart.load({
+    unload: true,
     columns: processColumnData(columns),
   });
 }
 
 function setColumnOtherData(columns) {
+  // step1: segment array from three to last data
   let retArr = columns.slice(2, -1);
+  // step2: amount of other price
   let retPrice = retArr.reduce((retPrice, item) => retPrice + item[1], 0);
   return [["其他", retPrice]];
 }
@@ -39,7 +42,7 @@ function processColumnData(columns) {
   // set descending
   let columnArr = Object.entries(columns);
   let columnsDesc = columnArr.sort((a, b) => { return b[1] - a[1] });
-  // set other
+  // set other data
   let retArr = columnsDesc.length > 3 ? columnsDesc.slice(0, 3).concat(setColumnOtherData(columnsDesc)) : columnsDesc.slice(0, 3)
   return retArr;
 }
