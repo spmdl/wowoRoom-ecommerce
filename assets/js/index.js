@@ -1,6 +1,3 @@
-// token data
-const api_path = "kent";
-const token = "tuOllAmACSQgpHpqMpD8LCKgzIH3";
 const productSelect = document.querySelector(".productSelect");
 let searchNum = document.querySelector(".searchNum");
 const cartList = document.querySelector(".shoppingCart-table");

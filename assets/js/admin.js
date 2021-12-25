@@ -1,109 +1,46 @@
+//===== Module ===== //
+import * as api from './api/dataService.js';
 import * as c3 from './modules/c3.js';
+import Order from './modules/order.js';
 
-// token data
-const api_path = "kent";
-const token = "tuOllAmACSQgpHpqMpD8LCKgzIH3";
+//===== DOM ===== //
 const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
-let cartsData = [];
-let chartColumns = {};
 
-function getOrderList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      renderOrder(response.data.orders);
-      c3.reload(chartColumns);
-    })
-    .catch((err) => { console.error(err) });
+//===== API ===== //
+async function getOrderListData() {
+  const { GET_orders } = api.ADMIN_apiRequest();
+  const ordersDataRes = await GET_orders();
+  return ordersDataRes.data.orders;
 }
 
-function deleteAllOrder() {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      renderOrder(response.data.orders);
-      c3.reload(chartColumns);
-    })
-    .catch((err) => { console.error(err) });
+async function changeOrderStatus(order, [id, status]) {
+  const { PUT_orderStatusChange } = api.ADMIN_apiRequest();
+  const orderStatusChangeRes = await PUT_orderStatusChange({
+    "data": {
+      "id": id,
+      "paid": status
+    }
+  });
+  renderOrders(order, orderStatusChangeRes.data.orders);
 }
 
-function deleteOrderItem(orderId) {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders/${orderId}`,
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      renderOrder(response.data.orders);
-      c3.reload(chartColumns);
-    })
-    .catch((err) => { console.error(err) });
-}
-
-function editOrderList(orderId, orderStatus) {
-  axios.put(`https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}/orders`,
-    {
-      "data": {
-        "id": orderId,
-        "paid": orderStatus
-      }
-    },
-    {
-      headers: {
-        'Authorization': token
-      }
-    })
-    .then(function (response) {
-      renderOrder(response.data.orders);
-    })
-}
-
-function addEventToOrderEdit() {
+//===== Listener ===== //
+function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     if (e.target.getAttribute('class').includes('delSingleOrder-Btn')) {
-      deleteOrderItem(e.target.dataset.id);
+      api.deleteOrderItem(e.target.dataset.id);
     } else if (e.target.getAttribute('class').includes('discardAllBtn')) {
-      deleteAllOrder();
+      api.deleteAllOrder();
     } else if (e.target.getAttribute('class').includes('orderStatus-not') || e.target.getAttribute('class').includes('orderStatus-done')) {
-      changeOrderPaid(e.target.dataset.index);
+      changeOrderStatus(order, order.getOrderStatus(e.target.dataset.index));
     }
   });
 }
 
-function processOrderSort(type, data) {
-  const sortType = {
-    'desc': data.sort((a, b) => { return b.createdAt - a.createdAt })
-  }
-  return sortType[type];
-}
-
-function changeOrderPaid(index) {
-  editOrderList(cartsData[index].id, !cartsData[index].paid, index);
-  if (cartsData[index].paid) {
-
-  }
-}
-
-function setChartColumns(chartColumns, item) {
-  if (chartColumns[item.products[0].title]) {
-    chartColumns[item.products[0].title] = chartColumns[item.products[0].title] + item.products[0].quantity * item.products[0].price
-  } else {
-    chartColumns[item.products[0].title] = item.products[0].quantity * item.products[0].price
-  }
-}
-
+//===== render view ===== //
 function generateOrder(id, index, userName, userTel, userAddress, userEmail, productTitle, productDate, productTime, paid) {
   return `
   <tr>
@@ -129,7 +66,7 @@ function generateOrder(id, index, userName, userTel, userAddress, userEmail, pro
   `
 }
 
-function renderOrder(data) {
+function renderOrders(order, data) {
   if (!data.length) {
     orderList.innerHTML = `
       <div class="empty-cart">
@@ -139,7 +76,6 @@ function renderOrder(data) {
     c3.destroy();
     return;
   }
-  cartsData = data;
   let tempOrderStr = `
     <thead>
       <tr>
@@ -155,19 +91,23 @@ function renderOrder(data) {
       </tr>
     </thead>
   `;
-  let dataSort = processOrderSort('desc', cartsData);
+  order.setCartsData(data);
+  let dataSort = order.getOrderSort('desc', data);
   dataSort.forEach( (item, index) => {
     const time = new Date(item.createdAt * 1000);
-    setChartColumns(chartColumns, item);
+    order.setChartColumns(item);
     tempOrderStr += generateOrder(item.id, index, item.user.name, item.user.tel, item.user.address, item.user.email, item.products[0].title, time.toLocaleDateString(), time.toLocaleTimeString(), item.paid);
   });
   delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
   orderTable.innerHTML = tempOrderStr;
 }
 
-function init() {
-  getOrderList();
-  addEventToOrderEdit();
+async function init() {
+  let order = new Order();
+  let data = await getOrderListData();
+  renderOrders(order, data);
+  addEventToOrderEdit(order);
+  c3.reload(order.chartColumns);
 }
 
 init();
