@@ -1,4 +1,4 @@
-import config from './config/config.js';
+import config from './config.js';
 
 const productSelect = document.querySelector(".productSelect");
 let searchNum = document.querySelector(".searchNum");
