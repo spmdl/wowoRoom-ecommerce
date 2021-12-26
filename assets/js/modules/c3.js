@@ -2,6 +2,7 @@
 // encapsulation: c3 property function
 export default function Chart() {
   this._colors = ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"];
+  this._chartColumns = {};
   this.chart =  c3.generate({
     bindto: '#chart',
     data: {
@@ -27,11 +28,23 @@ Chart.prototype.destroy = function () {
   this.chart.destroy();
 };
 
-Chart.prototype.reload = function (columns) {
+Chart.prototype.reload = function () {
+  console.log(this._chartColumns);
   this.chart.load({
     unload: true,
-    columns: this._processColumnData(columns),
+    columns: this._processColumnData(this._chartColumns),
   });
+};
+
+Chart.prototype.setColumnsInit = function () {
+  this._chartColumns = {};
+}
+Chart.prototype.setColumns = function (item) {
+  if (this._chartColumns[item.title]) {
+    this._chartColumns[item.title] = this._chartColumns[item.title] + item.quantity * item.price;
+  } else {
+    this._chartColumns[item.title] = item.quantity * item.price;
+  }
 };
 
 Chart.prototype._setColumnOtherData = function (columns) {

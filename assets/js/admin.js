@@ -17,7 +17,7 @@ async function editOrderEvents(method, orderRender=true, c3Render=false, args={}
   try {
     let resDataRes = await api.getRequest(method, args);
     orderRender && await renderOrders(resDataRes.data.orders);
-    c3Render && (order.getOrderData().length > 0 ? c3.reload(order.getChartColumns()) : c3.destroy());
+    c3Render && (order.getOrderData().length > 0 ? c3.reload() : c3.destroy());
   } catch (error) {
     throw error;
   }
@@ -38,15 +38,29 @@ function addEventToOrderEdit(order) {
 }
 
 //===== render view ===== //
-async function renderOrders(data) {
+function renderProductsTitle(products) {
+  let tempProductsTitle = ``;
+  products.forEach( product => {
+    c3.setColumns(product);
+    tempProductsTitle += generateTemp.generateOrderProductsTitle(product.title, product.quantity);
+  });
+  return tempProductsTitle;
+}
+function renderOrders(data) {
   if (!data.length) {
     orderList.innerHTML = generateTemp.orderEmpty();
     return;
   }
   let tempOrderStr = generateTemp.orderThead();
+  c3.setColumnsInit();
   order.setOrderData(data);
   let dataSort = order.getOrderSort(data);
-  dataSort.forEach( (item, index) => tempOrderStr += generateTemp.orderItem(...order.processOrderData(item, index)));
+  dataSort.forEach( (item, index) => {
+    tempOrderStr += generateTemp.orderItem(
+      ...order.processOrderData(item, index), 
+      renderProductsTitle(item.products)
+    );
+  });
   delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
   orderTable.innerHTML = tempOrderStr;
 }

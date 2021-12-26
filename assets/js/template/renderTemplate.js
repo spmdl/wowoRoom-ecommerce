@@ -1,7 +1,5 @@
-function generateOrderProductsTitle(items) {
-  let retTempStr = ``;
-  items.forEach( item => retTempStr += `<li>${item.title}x${item.quantity}</li>`);
-  return retTempStr;
+export function generateOrderProductsTitle(title, quantity) {
+  return `<li>${title}x${quantity}</li>`;
 }
 
 export function orderEmpty() {
@@ -30,7 +28,7 @@ export function orderThead() {
   `;
 }
 
-export function orderItem(id, index, userName, userTel, userAddress, userEmail, products, productDate, productTime, paid) {
+export function orderItem(id, index, userName, userTel, userAddress, userEmail, products, productDate, productTime, paid, productsTitle) {
   return `
     <tr>
       <td>${id}</td>
@@ -39,7 +37,7 @@ export function orderItem(id, index, userName, userTel, userAddress, userEmail, 
       <td>${userAddress}</td>
       <td>${userEmail}</td>
       <td>
-        <ul>${generateOrderProductsTitle(products)}</ul>
+        <ul>${productsTitle}</ul>
       </td>
       <td>
         <p>${productDate}</p>
