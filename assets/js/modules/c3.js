@@ -1,6 +1,7 @@
-let colors = ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"];
-
+// encapsulation: data process for the column Data
+// encapsulation: c3 property function
 export default function Chart() {
+  this._colors = ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"];
   this.chart =  c3.generate({
     bindto: '#chart',
     data: {
@@ -13,10 +14,10 @@ export default function Chart() {
       },
     },
     color: {
-      pattern: colors
+      pattern: this._colors
     },
   });
-}
+};
 
 Chart.prototype.unload = function () {
   this.chart.unload();
@@ -39,7 +40,7 @@ Chart.prototype._setColumnOtherData = function (columns) {
   // step2: amount of other price
   let retPrice = retArr.reduce((retPrice, item) => retPrice + item[1], 0);
   return [["其他", retPrice]];
-}
+};
 
 Chart.prototype._processColumnData = function (columns) {
   // set descending
@@ -48,4 +49,4 @@ Chart.prototype._processColumnData = function (columns) {
   // set other data
   let retArr = columnsDesc.length > 3 ? columnsDesc.slice(0, 3).concat(this._setColumnOtherData(columnsDesc)) : columnsDesc.slice(0, 3)
   return retArr;
-}
+};
