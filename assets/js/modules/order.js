@@ -43,7 +43,7 @@ export default class Order {
       item.user.tel, 
       item.user.address, 
       item.user.email, 
-      item.products[0].title, 
+      item.products,
       time.toLocaleDateString(), 
       time.toLocaleTimeString(), 
       item.paid

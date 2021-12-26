@@ -75,7 +75,12 @@ function addEventToOrderEdit(order) {
 }
 
 //===== render view ===== //
-function generateOrder(id, index, userName, userTel, userAddress, userEmail, productTitle, productDate, productTime, paid) {
+function generateOrderProductsTitle(items) {
+  let retTempStr = ``;
+  items.forEach( item => retTempStr += `<li>${item.title}x${item.quantity}</li>`);
+  return retTempStr;
+}
+function generateOrder(id, index, userName, userTel, userAddress, userEmail, products, productDate, productTime, paid) {
   return `
   <tr>
     <td>${id}</td>
@@ -84,7 +89,7 @@ function generateOrder(id, index, userName, userTel, userAddress, userEmail, pro
     <td>${userAddress}</td>
     <td>${userEmail}</td>
     <td>
-      <p>${productTitle}</p>
+      <ul>${generateOrderProductsTitle(products)}</ul>
     </td>
     <td>
       <p>${productDate}</p>
