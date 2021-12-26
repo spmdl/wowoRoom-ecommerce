@@ -12,7 +12,7 @@ const apiRequestWithToken = axios.create({
 })
 
 // ----- Admin API ----- //
-export const ADMIN_apiRequest = (method, args={}) => {
+export const ADMIN_apiRequest = () => {
   // 取得訂單資料
   const GET_orders = () => apiRequestWithToken.get(`/admin/${config.api_path}/orders`);
   // 訂單狀態切換
@@ -22,16 +22,33 @@ export const ADMIN_apiRequest = (method, args={}) => {
   // 刪除一筆訂單
   const DELETE_order = id => apiRequestWithToken.delete(`/admin/${config.api_path}/orders/${id}`);
 
-  const methodType = {
-    "GET_orders": GET_orders,
-    "PUT_orderStatusChange": PUT_orderStatusChange,
-    "DELETE_allOrders": DELETE_allOrders,
-    "DELETE_order": DELETE_order,
+  return {
+    GET_orders,
+    PUT_orderStatusChange,
+    DELETE_allOrders,
+    DELETE_order
   };
-  if (args) {
-    return methodType[method](args);
-  } else {
-    return methodType[method]();
+}
+
+export async function getRequest(method, args={}) {
+  switch (method) {
+    case "getOrderListData":
+      const { GET_orders } = ADMIN_apiRequest()
+      return await GET_orders();
+    case "deleteOrderAll":
+      const { DELETE_allOrders } = ADMIN_apiRequest()
+      return await DELETE_allOrders();
+    case "deleteOrderItem":
+      const { DELETE_order } = ADMIN_apiRequest();
+      return await DELETE_order(args.id);
+    case "changeOrderStatus":
+      const { PUT_orderStatusChange } = ADMIN_apiRequest()
+      return await PUT_orderStatusChange("PUT_orderStatusChange", {
+        "data": {
+          "id": args.id,
+          "paid": args.status
+        }
+      });
   }
 }
 

@@ -12,26 +12,10 @@ const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
 
-//===== API ===== //
-async function apiRequest(method, args={}) {
-  const methodType = {
-    "getOrderListData": method === "getOrderListData" && api.ADMIN_apiRequest("GET_orders"),
-    "deleteOrderAll": method === "deleteOrderAll" && api.ADMIN_apiRequest("DELETE_allOrders"),
-    "deleteOrderItem": method === "deleteOrderItem" && api.ADMIN_apiRequest("DELETE_order", args),
-    "changeOrderStatus": method === "changeOrderStatus" && api.ADMIN_apiRequest("PUT_orderStatusChange", {
-      "data": {
-        "id": args.id,
-        "paid": args.status
-      }
-    }),
-  };
-  return await methodType[method];
-}
-
 //===== editOrder ===== //
 async function editOrderEvents(method, orderRender=true, c3Render=false, args={}) {
   try {
-    let resDataRes = await apiRequest(method, args);
+    let resDataRes = await api.getRequest(method, args);
     orderRender && await renderOrders(resDataRes.data.orders);
     c3Render && (order.getOrderData().length > 0 ? c3.reload(order.getChartColumns()) : c3.destroy());
   } catch (error) {
@@ -44,8 +28,8 @@ function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     const orderEditListener = {
-      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && editOrderEvents("deleteOrderItem", true, true, e.target.dataset.id),
-      'delSingleOrder-Btn': e.target.getAttribute('class').includes('discardAllBtn') && editOrderEvents("deleteOrderAll", true, true),
+      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && editOrderEvents("deleteOrderItem", true, true, {"id": e.target.dataset.id}),
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && editOrderEvents("deleteOrderAll", true, true),
       'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
       'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
     };
