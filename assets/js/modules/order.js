@@ -2,7 +2,7 @@
 
 export default class Order {
   constructor() {
-    this.cartsData = [];
+    this.orderData = [];
     this.chartColumns = {};
     this.sortType = 'desc';
   }
@@ -13,16 +13,22 @@ export default class Order {
     return orderSort[this.sortType];
   }
   
+  getOrderData() {
+    return this.orderData;
+  }
+
   getOrderStatus(index) {
-    return [this.cartsData[index].id, !this.cartsData[index].paid];
+    const id = this.orderData[index].id;
+    const status = !this.orderData[index].paid
+    return { id, status};
   }
 
   getChartColumns() {
     return this.chartColumns;
   }
   
-  setCartsData(data) {
-    this.cartsData = data;
+  setOrderData(data) {
+    this.orderData = data;
   }
 
   _setChartColumns(item) {

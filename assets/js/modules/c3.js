@@ -43,10 +43,11 @@ Chart.prototype._setColumnOtherData = function (columns) {
 };
 
 Chart.prototype._processColumnData = function (columns) {
-  // set descending
+  // other data consists of except top three data
   let columnArr = Object.entries(columns);
+  // step1: descending data
   let columnsDesc = columnArr.sort((a, b) => { return b[1] - a[1] });
-  // set other data
+  // step2: segment data
   let retArr = columnsDesc.length > 3 ? columnsDesc.slice(0, 3).concat(this._setColumnOtherData(columnsDesc)) : columnsDesc.slice(0, 3)
   return retArr;
 };

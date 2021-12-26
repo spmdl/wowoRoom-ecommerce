@@ -12,49 +12,27 @@ const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
 
 //===== API ===== //
-async function getOrderListData() {
-  try {
-    const { GET_orders } = api.ADMIN_apiRequest();
-    const ordersDataRes = await GET_orders();
-    renderOrders(ordersDataRes.data.orders);
-    c3.reload(order.getChartColumns());
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function changeOrderStatus([id, status]) {
-  try {
-    const { PUT_orderStatusChange } = api.ADMIN_apiRequest();
-    const orderStatusChangeRes = await PUT_orderStatusChange({
+async function apiRequest(method) {
+  const methodType = {
+    "getOrderListData": method === "getOrderListData" && api.ADMIN_apiRequest("GET_orders"),
+    "deleteOrderAll": method === "deleteOrderAll" && api.ADMIN_apiRequest("DELETE_allOrders"),
+    "deleteOrderItem": method === "deleteOrderItem" && api.ADMIN_apiRequest("DELETE_order", args),
+    "changeOrderStatus": method === "changeOrderStatus" && api.ADMIN_apiRequest("PUT_orderStatusChange", {
       "data": {
-        "id": id,
-        "paid": status
+        "id": args.id,
+        "paid": args.status
       }
-    });
-    renderOrders(orderStatusChangeRes.data.orders);
-  } catch (error) {
-    throw error;
-  }
+    }),
+  };
+  return await methodType[method];
 }
 
-async function deleteOrderItem(id) {
+//===== editOrder ===== //
+async function editOrderEvents(method, orderRender=true, c3Render=false, args={}) {
   try {
-    const { DELETE_order } = api.ADMIN_apiRequest();
-    const orderDeleteRes = await DELETE_order(id);
-    renderOrders(orderDeleteRes.data.orders);
-    c3.reload(order.getChartColumns());
-  } catch (error) {
-    throw error;
-  }
-}
-
-async function deleteOrderAll() {
-  try {
-    const { DELETE_allOrders } = api.ADMIN_apiRequest();
-    const orderDeleteAll = await DELETE_allOrders();
-    renderOrders(orderDeleteAll.data.orders);
-    c3.reload(order.getChartColumns());
+    let resDataRes = await apiRequest(method);
+    orderRender && renderOrders(resDataRes.data.orders);
+    c3Render && (order.getOrderData().length > 0 ? c3.reload(order.getChartColumns()) : c3.destroy());
   } catch (error) {
     throw error;
   }
@@ -65,10 +43,10 @@ function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     const orderEditListener = {
-      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && deleteOrderItem(e.target.dataset.id),
-      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && deleteOrderAll(),
-      'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && changeOrderStatus(order.getOrderStatus(e.target.dataset.index)),
-      'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && changeOrderStatus(order.getOrderStatus(e.target.dataset.index)),
+      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && editOrderEvents("deleteOrderItem", true, true, e.target.dataset.id),
+      'delSingleOrder-Btn': e.target.getAttribute('class').includes('discardAllBtn') && editOrderEvents("deleteOrderAll", true, true),
+      'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
+      'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
     };
     orderEditListener[e.target.getAttribute('class')];
   });
@@ -112,7 +90,6 @@ function renderOrders(data) {
         <p> 加油別氣餒，再加把勁就有訂單了 ༼•̃͡ ɷ•̃͡༽ </p>
       </div>
     ` ;
-    c3.destroy();
     return;
   }
   let tempOrderStr = `
@@ -130,7 +107,7 @@ function renderOrders(data) {
       </tr>
     </thead>
   `;
-  order.setCartsData(data);
+  order.setOrderData(data);
   let dataSort = order.getOrderSort(data);
   dataSort.forEach( (item, index) => tempOrderStr += generateOrder(...order.processOrderData(item, index)));
   delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
@@ -138,7 +115,7 @@ function renderOrders(data) {
 }
 
 async function init() {
-  await getOrderListData();
+  await editOrderEvents("getOrderListData", true, true);
   addEventToOrderEdit(order);
 }
 

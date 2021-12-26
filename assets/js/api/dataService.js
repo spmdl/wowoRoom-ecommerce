@@ -12,7 +12,47 @@ const apiRequestWithToken = axios.create({
 })
 
 // ----- Admin API ----- //
-export const ADMIN_apiRequest = () => {
+// export const ADMIN_apiRequest = () => {
+//   // 取得訂單資料
+//   const GET_orders = () => apiRequestWithToken.get(`/admin/${config.api_path}/orders`)
+//   // 訂單狀態切換
+//   const PUT_orderStatusChange = data => apiRequestWithToken.put(`/admin/${config.api_path}/orders`, data)
+//   // 清空訂單
+//   const DELETE_allOrders = () => apiRequestWithToken.delete(`/admin/${config.api_path}/orders`)
+//   // 刪除一筆訂單
+//   const DELETE_order = id => apiRequestWithToken.delete(`/admin/${config.api_path}/orders/${id}`)
+
+//   return {
+//     GET_orders,
+//     PUT_orderStatusChange,
+//     DELETE_allOrders,
+//     DELETE_order
+//   }
+// }
+
+// export const ADMIN_apiRequest = (method, arg={}) => {
+//   // 取得訂單資料
+//   const GET_orders = () => apiRequestWithToken.get(`/admin/${config.api_path}/orders`)
+//   // 訂單狀態切換
+//   const PUT_orderStatusChange = data => apiRequestWithToken.put(`/admin/${config.api_path}/orders`, data)
+//   // 清空訂單
+//   const DELETE_allOrders = () => apiRequestWithToken.delete(`/admin/${config.api_path}/orders`)
+//   // 刪除一筆訂單
+//   const DELETE_order = id => apiRequestWithToken.delete(`/admin/${config.api_path}/orders/${id}`)
+
+//   const methodType = {
+//     "GET_orders": GET_orders,
+//     "PUT_orderStatusChange": PUT_orderStatusChange,
+//     "DELETE_allOrders": DELETE_allOrders,
+//     "DELETE_order": DELETE_order,
+//   };
+//   if (arg) {
+//     return methodType[method](arg);
+//   } else {
+//     return methodType[method]();
+//   }
+// }
+export const ADMIN_apiRequest = (method, args={}) => {
   // 取得訂單資料
   const GET_orders = () => apiRequestWithToken.get(`/admin/${config.api_path}/orders`)
   // 訂單狀態切換
@@ -22,11 +62,16 @@ export const ADMIN_apiRequest = () => {
   // 刪除一筆訂單
   const DELETE_order = id => apiRequestWithToken.delete(`/admin/${config.api_path}/orders/${id}`)
 
-  return {
-    GET_orders,
-    PUT_orderStatusChange,
-    DELETE_allOrders,
-    DELETE_order
+  const methodType = {
+    "GET_orders": GET_orders,
+    "PUT_orderStatusChange": PUT_orderStatusChange,
+    "DELETE_allOrders": DELETE_allOrders,
+    "DELETE_order": DELETE_order,
+  };
+  if (args) {
+    return methodType[method](args);
+  } else {
+    return methodType[method]();
   }
 }
 
