@@ -32,7 +32,7 @@ async function apiRequest(method, args={}) {
 async function editOrderEvents(method, orderRender=true, c3Render=false, args={}) {
   try {
     let resDataRes = await apiRequest(method, args);
-    orderRender && renderOrders(resDataRes.data.orders);
+    orderRender && await renderOrders(resDataRes.data.orders);
     c3Render && (order.getOrderData().length > 0 ? c3.reload(order.getChartColumns()) : c3.destroy());
   } catch (error) {
     throw error;
@@ -54,7 +54,7 @@ function addEventToOrderEdit(order) {
 }
 
 //===== render view ===== //
-function renderOrders(data) {
+async function renderOrders(data) {
   if (!data.length) {
     orderList.innerHTML = generateTemp.orderEmpty();
     return;
