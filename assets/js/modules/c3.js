@@ -1,36 +1,39 @@
 let colors = ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"];
-export let chart = c3.generate({
-  bindto: '#chart',
-  data: {
-    type: "pie",
-    columns: [],
-    empty: {
-      label: {
-        text: "loading..."
-      }
+
+export default function Chart() {
+  this.chart =  c3.generate({
+    bindto: '#chart',
+    data: {
+      type: "pie",
+      columns: [],
+      empty: {
+        label: {
+          text: "loading..."
+        }
+      },
     },
-  },
-  color: {
-    pattern: colors
-  },
-});
-
-export function unload() {
-  chart.unload();
-}
-
-export function destroy() {
-  chart.destroy();
-}
-
-export function reload(columns) {
-  chart.load({
-    unload: true,
-    columns: processColumnData(columns),
+    color: {
+      pattern: colors
+    },
   });
 }
 
-function setColumnOtherData(columns) {
+Chart.prototype.unload = function () {
+  this.chart.unload();
+};
+
+Chart.prototype.destroy = function () {
+  this.chart.destroy();
+};
+
+Chart.prototype.reload = function (columns) {
+  this.chart.load({
+    unload: true,
+    columns: this._processColumnData(columns),
+  });
+};
+
+Chart.prototype._setColumnOtherData = function (columns) {
   // step1: segment array from three to last data
   let retArr = columns.slice(2, -1);
   // step2: amount of other price
@@ -38,11 +41,11 @@ function setColumnOtherData(columns) {
   return [["其他", retPrice]];
 }
 
-function processColumnData(columns) {
+Chart.prototype._processColumnData = function (columns) {
   // set descending
   let columnArr = Object.entries(columns);
   let columnsDesc = columnArr.sort((a, b) => { return b[1] - a[1] });
   // set other data
-  let retArr = columnsDesc.length > 3 ? columnsDesc.slice(0, 3).concat(setColumnOtherData(columnsDesc)) : columnsDesc.slice(0, 3)
+  let retArr = columnsDesc.length > 3 ? columnsDesc.slice(0, 3).concat(this._setColumnOtherData(columnsDesc)) : columnsDesc.slice(0, 3)
   return retArr;
 }

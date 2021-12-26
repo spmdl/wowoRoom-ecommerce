@@ -1,3 +1,5 @@
+// data storage and process.
+
 export default class Order {
   constructor() {
     this.cartsData = [];
@@ -14,12 +16,16 @@ export default class Order {
   getOrderStatus(index) {
     return [this.cartsData[index].id, !this.cartsData[index].paid];
   }
+
+  getChartColumns() {
+    return this.chartColumns;
+  }
   
   setCartsData(data) {
     this.cartsData = data;
   }
 
-  setChartColumns(item) {
+  _setChartColumns(item) {
     if (this.chartColumns[item.products[0].title]) {
       this.chartColumns[item.products[0].title] = this.chartColumns[item.products[0].title] + item.products[0].quantity * item.products[0].price
     } else {
@@ -29,7 +35,7 @@ export default class Order {
 
   processOrderData(item, index) {
     const time = new Date(item.createdAt * 1000);
-    this.setChartColumns(item);
+    this._setChartColumns(item);
     return [
       item.id, 
       index, 

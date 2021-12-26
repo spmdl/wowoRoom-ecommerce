@@ -1,8 +1,9 @@
 //===== Module ===== //
 import * as api from './api/dataService.js';
-import * as c3 from './modules/c3.js';
+import Chart from './modules/c3.js';
 import Order from './modules/order.js';
 
+let c3 = new Chart();
 let order = new Order();
 
 //===== DOM ===== //
@@ -16,7 +17,7 @@ async function getOrderListData() {
     const { GET_orders } = api.ADMIN_apiRequest();
     const ordersDataRes = await GET_orders();
     renderOrders(ordersDataRes.data.orders);
-    c3.reload(order.chartColumns);
+    c3.reload(order.getChartColumns());
   } catch (error) {
     throw error;
   }
@@ -42,7 +43,7 @@ async function deleteOrderItem(id) {
     const { DELETE_order } = api.ADMIN_apiRequest();
     const orderDeleteRes = await DELETE_order(id);
     renderOrders(orderDeleteRes.data.orders);
-    c3.reload(order.chartColumns);
+    c3.reload(order.getChartColumns());
   } catch (error) {
     throw error;
   }
@@ -53,7 +54,7 @@ async function deleteOrderAll() {
     const { DELETE_allOrders } = api.ADMIN_apiRequest();
     const orderDeleteAll = await DELETE_allOrders();
     renderOrders(orderDeleteAll.data.orders);
-    c3.reload(order.chartColumns);
+    c3.reload(order.getChartColumns());
   } catch (error) {
     throw error;
   }
