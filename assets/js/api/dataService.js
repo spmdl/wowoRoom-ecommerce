@@ -43,7 +43,7 @@ export async function getRequest(method, args={}) {
       return await DELETE_order(args.id);
     case "changeOrderStatus":
       const { PUT_orderStatusChange } = ADMIN_apiRequest()
-      return await PUT_orderStatusChange("PUT_orderStatusChange", {
+      return await PUT_orderStatusChange({
         "data": {
           "id": args.id,
           "paid": args.status

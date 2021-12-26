@@ -31,17 +31,19 @@ export default class Order {
     this.orderData = data;
   }
 
-  _setChartColumns(item) {
-    if (this.chartColumns[item.products[0].title]) {
-      this.chartColumns[item.products[0].title] = this.chartColumns[item.products[0].title] + item.products[0].quantity * item.products[0].price
-    } else {
-      this.chartColumns[item.products[0].title] = item.products[0].quantity * item.products[0].price
-    }
+  _setChartColumns(items) {
+    items.forEach( item => {
+      if (this.chartColumns[item.title]) {
+        this.chartColumns[item.title] = this.chartColumns[item.title] + item.quantity * item.price;
+      } else {
+        this.chartColumns[item.title] = item.quantity * item.price;
+      }
+    });
   }
 
   processOrderData(item, index) {
     const time = new Date(item.createdAt * 1000);
-    this._setChartColumns(item);
+    this._setChartColumns(item.products);
     return [
       item.id, 
       index, 
