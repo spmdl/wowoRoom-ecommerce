@@ -1,3 +1,5 @@
+import config from './config.js';
+
 const productSelect = document.querySelector(".productSelect");
 let searchNum = document.querySelector(".searchNum");
 const cartList = document.querySelector(".shoppingCart-table");
@@ -8,7 +10,7 @@ let cartsData = [];
 
 // 取得產品列表
 function getProductList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/products`).
+  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/products`).
     then(function (response) {
       let categories = renderProduct(response.data.products);
       productsData = response.data.products;
@@ -21,7 +23,7 @@ function getProductList() {
 
 // 取得購物車列表
 function getCartList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`).
+  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
     then(function (response) {
       renderCart(response.data);
     })
@@ -29,7 +31,7 @@ function getCartList() {
 
 // 加入購物車
 function addCartItem(itemData) {
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, {
+  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, {
     "data": itemData
   }).
     then(function (response) {
@@ -39,7 +41,7 @@ function addCartItem(itemData) {
 
 // 刪除購物車內特定產品
 const deleteCartItem = function(cartId) {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts/${cartId}`).
+  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts/${cartId}`).
     then(function (response) {
       renderCart(response.data);
     })
@@ -47,7 +49,7 @@ const deleteCartItem = function(cartId) {
 
 // 清除購物車內全部產品
 function deleteAllCartList() {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`).
+  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
     then(function (response) {
       renderCart(response.data);
     })
@@ -55,7 +57,7 @@ function deleteAllCartList() {
 
 // 編輯購物車
 function editCartItem(cartId, quantity) {
-  axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, 
+  axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, 
     {
       "data": {
         "id": cartId,
@@ -64,7 +66,7 @@ function editCartItem(cartId, quantity) {
     },
     {
       headers: {
-        'Authorization': token
+        'Authorization': config.token
       }
     })
     .then(function (response) {
@@ -74,7 +76,7 @@ function editCartItem(cartId, quantity) {
 
 // 送出購買訂單
 function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool.com", address="高雄市六角學院路", payment="Apple Pay") {
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`,
+  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/orders`,
     {
       "data": {
         "user": {

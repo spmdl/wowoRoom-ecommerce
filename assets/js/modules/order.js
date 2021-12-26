@@ -2,12 +2,13 @@ export default class Order {
   constructor() {
     this.cartsData = [];
     this.chartColumns = {};
+    this.sortType = 'desc';
   }
-  getOrderSort(sortType, data) {
+  getOrderSort(data) {
     const orderSort = {
       'desc': data.sort((a, b) => { return b.createdAt - a.createdAt })
     }
-    return orderSort[sortType];
+    return orderSort[this.sortType];
   }
   
   getOrderStatus(index) {
@@ -24,5 +25,22 @@ export default class Order {
     } else {
       this.chartColumns[item.products[0].title] = item.products[0].quantity * item.products[0].price
     }
+  }
+
+  processOrderData(item, index) {
+    const time = new Date(item.createdAt * 1000);
+    this.setChartColumns(item);
+    return [
+      item.id, 
+      index, 
+      item.user.name, 
+      item.user.tel, 
+      item.user.address, 
+      item.user.email, 
+      item.products[0].title, 
+      time.toLocaleDateString(), 
+      time.toLocaleTimeString(), 
+      item.paid
+    ];
   }
 }

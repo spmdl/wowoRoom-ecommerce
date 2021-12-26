@@ -3,6 +3,8 @@ import * as api from './api/dataService.js';
 import * as c3 from './modules/c3.js';
 import Order from './modules/order.js';
 
+let order = new Order();
+
 //===== DOM ===== //
 const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
@@ -10,33 +12,64 @@ const orderList = document.querySelector(".orderPage-list");
 
 //===== API ===== //
 async function getOrderListData() {
-  const { GET_orders } = api.ADMIN_apiRequest();
-  const ordersDataRes = await GET_orders();
-  return ordersDataRes.data.orders;
+  try {
+    const { GET_orders } = api.ADMIN_apiRequest();
+    const ordersDataRes = await GET_orders();
+    renderOrders(ordersDataRes.data.orders);
+    c3.reload(order.chartColumns);
+  } catch (error) {
+    throw error;
+  }
 }
 
-async function changeOrderStatus(order, [id, status]) {
-  const { PUT_orderStatusChange } = api.ADMIN_apiRequest();
-  const orderStatusChangeRes = await PUT_orderStatusChange({
-    "data": {
-      "id": id,
-      "paid": status
-    }
-  });
-  renderOrders(order, orderStatusChangeRes.data.orders);
+async function changeOrderStatus([id, status]) {
+  try {
+    const { PUT_orderStatusChange } = api.ADMIN_apiRequest();
+    const orderStatusChangeRes = await PUT_orderStatusChange({
+      "data": {
+        "id": id,
+        "paid": status
+      }
+    });
+    renderOrders(orderStatusChangeRes.data.orders);
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function deleteOrderItem(id) {
+  try {
+    const { DELETE_order } = api.ADMIN_apiRequest();
+    const orderDeleteRes = await DELETE_order(id);
+    renderOrders(orderDeleteRes.data.orders);
+    c3.reload(order.chartColumns);
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function deleteOrderAll() {
+  try {
+    const { DELETE_allOrders } = api.ADMIN_apiRequest();
+    const orderDeleteAll = await DELETE_allOrders();
+    renderOrders(orderDeleteAll.data.orders);
+    c3.reload(order.chartColumns);
+  } catch (error) {
+    throw error;
+  }
 }
 
 //===== Listener ===== //
 function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
-    if (e.target.getAttribute('class').includes('delSingleOrder-Btn')) {
-      api.deleteOrderItem(e.target.dataset.id);
-    } else if (e.target.getAttribute('class').includes('discardAllBtn')) {
-      api.deleteAllOrder();
-    } else if (e.target.getAttribute('class').includes('orderStatus-not') || e.target.getAttribute('class').includes('orderStatus-done')) {
-      changeOrderStatus(order, order.getOrderStatus(e.target.dataset.index));
-    }
+    const orderEditListener = {
+      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && deleteOrderItem(e.target.dataset.id),
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && deleteOrderAll(),
+      'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && changeOrderStatus(order.getOrderStatus(e.target.dataset.index)),
+      'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && changeOrderStatus(order.getOrderStatus(e.target.dataset.index)),
+    };
+    orderEditListener[e.target.getAttribute('class')];
   });
 }
 
@@ -57,7 +90,7 @@ function generateOrder(id, index, userName, userTel, userAddress, userEmail, pro
       <p>${productTime}</p>
     </td>
     <td class="orderStatus">
-      <a href="javascript:void(0);" data-index=${Number(index)} class="${paid ? 'orderStatus-done' : 'orderStatus-not'}">${paid ? "已處理" : "未處理"}</a>
+      <a href="javascript:void(0);" data-index=${index} class="${paid ? 'orderStatus-done' : 'orderStatus-not'}">${paid ? "已處理" : "未處理"}</a>
     </td>
     <td>
       <input type="button" class="delSingleOrder-Btn" value="刪除" data-id=${id}>
@@ -66,7 +99,7 @@ function generateOrder(id, index, userName, userTel, userAddress, userEmail, pro
   `
 }
 
-function renderOrders(order, data) {
+function renderOrders(data) {
   if (!data.length) {
     orderList.innerHTML = `
       <div class="empty-cart">
@@ -92,22 +125,15 @@ function renderOrders(order, data) {
     </thead>
   `;
   order.setCartsData(data);
-  let dataSort = order.getOrderSort('desc', data);
-  dataSort.forEach( (item, index) => {
-    const time = new Date(item.createdAt * 1000);
-    order.setChartColumns(item);
-    tempOrderStr += generateOrder(item.id, index, item.user.name, item.user.tel, item.user.address, item.user.email, item.products[0].title, time.toLocaleDateString(), time.toLocaleTimeString(), item.paid);
-  });
+  let dataSort = order.getOrderSort(data);
+  dataSort.forEach( (item, index) => tempOrderStr += generateOrder(...order.processOrderData(item, index)));
   delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
   orderTable.innerHTML = tempOrderStr;
 }
 
 async function init() {
-  let order = new Order();
-  let data = await getOrderListData();
-  renderOrders(order, data);
+  await getOrderListData();
   addEventToOrderEdit(order);
-  c3.reload(order.chartColumns);
 }
 
 init();
