@@ -1,5 +1,5 @@
 //===== Module ===== //
-import * as api from './api/dataService.js';
+import { getAdminRequest } from './api/dataService.js';
 import Chart from './component/c3.js';
 import { closeMenu, menuToggle } from './component/hamburgerMenu.js';
 import Order from './modules/order.js';
@@ -32,7 +32,7 @@ function checkOrdersEmpty(data) {
 //===== listener ===== //
 async function orderEditListener(method, orderRender=true, c3Render=false, args={}) {
   try {
-    let resData = await api.getRequest(method, args);
+    let resData = await getAdminRequest(method, args);
     order.setOriginData(resData.data.orders);
     orderRender && checkOrdersEmpty(resData.data.orders);
     c3Render && (resData.data.orders.length > 0 ? c3.reload() : c3.destroy());

@@ -30,7 +30,7 @@ export const ADMIN_apiRequest = () => {
   };
 }
 
-export async function getRequest(method, args={}) {
+export async function getAdminRequest(method, args={}) {
   switch (method) {
     case "getOrderListData":
       const { GET_orders } = ADMIN_apiRequest()
@@ -52,68 +52,58 @@ export async function getRequest(method, args={}) {
   }
 }
 
-// customer api
-export function getProductList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/products`).
-    then(function (response) {
-      let categories = renderProduct(response.data.products);
-      productsData = response.data.products;
-      renderCategorySelect(categories);
-    })
-    .catch(function(error) {
-      console.log(error.response.data)
-    })
-}
+// ----- customer API ----- //
+// 取得全部產品
+export const GET_products = () => apiRequest.get(`/customer/${config.api_path}/products`)
+// 取得購物車資訊
+export const GET_carts = () => apiRequest.get(`/customer/${config.api_path}/carts`)
+// 新增產品至購物車
+export const POST_carts = data => apiRequest.post(`/customer/${config.api_path}/carts`, data)
+// 修改購物車產品數量
+export const PATCH_carts = data => apiRequest.patch(`/customer/${config.api_path}/carts`, data)
+// 刪除購物車產品
+export const DELETE_cartsProd = id => apiRequest.delete(`/customer/${config.api_path}/carts/${id}`)
+// 清除購物車
+export const DELETE_cartsAllProd = () => apiRequest.delete(`/customer/${config.api_path}/carts`)
+// 送出訂單
+export const POST_order = data => apiRequest.post(`/customer/${config.api_path}/orders`, data)
 
-// 取得購物車列表
-export function getCartList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 加入購物車
-export function addCartItem(itemData) {
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, {
-    "data": itemData
-  }).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 刪除購物車內特定產品
-export const deleteCartItem = function(cartId) {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts/${cartId}`).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 清除購物車內全部產品
-export function deleteAllCartList() {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 編輯購物車
-export function editCartItem(cartId, quantity) {
-  axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, 
-    {
-      "data": {
-        "id": cartId,
-        "quantity": quantity
-      }
-    },
-    {
-      headers: {
-        'Authorization': config.token
-      }
-    })
-    .then(function (response) {
-      renderCart(response.data);
-    })
+export async function getCustomerRequest(method, args={}) {
+  switch (method) {
+    case "getProductList":
+      return await GET_products();
+    case "getCartList":
+      return await GET_carts();
+    case "deleteAllCartList":
+      return await DELETE_cartsAllProd();
+    case "addCartItem":
+      return await POST_carts({
+        "data": {
+          "productId": args.productId,
+          "quantity": args.quantity
+        }
+      });
+    case "editCartItem":
+      return await PATCH_carts({
+        "data": {
+          "id": args.id,
+          "quantity": args.quantity
+        }
+      });
+    case "deleteCartItem":
+      return await DELETE_cartsProd(args.id);
+    case "createOrder":
+      return await POST_order({
+        "data": {
+          "user": {
+            "name": args.name,
+            "tel": args.tel,
+            "email": args.email,
+            "address": args.address,
+            "payment": args.payment
+          }
+        }
+      });
+    
+  }
 }

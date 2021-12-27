@@ -1,4 +1,6 @@
-import config from './config.js';
+//===== Module ===== //
+import { getCustomerRequest } from './api/dataService.js';
+// import Cart from './modules/cart.js';
 
 const productSelect = document.querySelector(".productSelect");
 let searchNum = document.querySelector(".searchNum");
@@ -8,102 +10,40 @@ const creatOrderBtn = document.querySelector(".orderInfo-btn");
 let productsData = [];
 let cartsData = [];
 
-// 取得產品列表
-function getProductList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/products`).
-    then(function (response) {
-      let categories = renderProduct(response.data.products);
-      productsData = response.data.products;
-      renderCategorySelect(categories);
-    })
-    .catch(function(error) {
-      console.log(error.response.data)
-    })
+//===== listener ===== //
+async function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool.com", address="高雄市六角學院路", payment="Apple Pay") {
+  let resData = await getCustomerRequest("createOrder", {
+    "name": name,
+    "tel": tel,
+    "email": email,
+    "address": address,
+    "payment": payment
+  });
+  eventListener("getCartList");
+  clearForm(orderForm);
 }
-
-// 取得購物車列表
-function getCartList() {
-  axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
-    then(function (response) {
-      renderCart(response.data);
-    })
+async function getProductList() {
+  let resData = await getCustomerRequest("getProductList");
+  let categories = renderProduct(resData.data.products);
+  productsData = resData.data.products;
+  renderCategorySelect(categories);
 }
-
-// 加入購物車
-function addCartItem(itemData) {
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, {
-    "data": itemData
-  }).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 刪除購物車內特定產品
-const deleteCartItem = function(cartId) {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts/${cartId}`).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 清除購物車內全部產品
-function deleteAllCartList() {
-  axios.delete(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`).
-    then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 編輯購物車
-function editCartItem(cartId, quantity) {
-  axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/carts`, 
-    {
-      "data": {
-        "id": cartId,
-        "quantity": quantity
-      }
-    },
-    {
-      headers: {
-        'Authorization': config.token
-      }
-    })
-    .then(function (response) {
-      renderCart(response.data);
-    })
-}
-
-// 送出購買訂單
-function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool.com", address="高雄市六角學院路", payment="Apple Pay") {
-  axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${config.api_path}/orders`,
-    {
-      "data": {
-        "user": {
-          "name": name,
-          "tel": tel,
-          "email": email,
-          "address": address,
-          "payment": payment
-        }
-      }
-    }
-  ).
-    then(function (response) {
-      console.log(response.data);
-      getCartList();
-      clearForm(orderForm);
-    })
-    .catch(function(error){
-      console.log(error);
-    })
+async function eventListener(method, args={}) {
+  try {
+    let resData = await getCustomerRequest(method, args);
+    console.log(resData);
+    renderCart(resData.data);
+  } catch (error) {
+    throw error;
+  }
 }
 
 // addEventListener
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
     if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
-      addCartItem(getCartItemData(e));
+      // addCartItem(getCartItemData(e));
+      eventListener("addCartItem", getCartItemData(e));
     }
   });
 }
@@ -123,8 +63,8 @@ function addEventToCartEdit() {
   cartList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     const cartEditListener = {
-      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && deleteAllCartList(),
-      'discardBtn': e.target.getAttribute('class').includes('discardBtn') && deleteCartItem(e.target.dataset.id),
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && eventListener("deleteAllCartList"),
+      'discardBtn': e.target.getAttribute('class').includes('discardBtn') && eventListener("deleteCartItem", {"id": e.target.dataset.id}),
       'quantity-sub': e.target.getAttribute('class').includes('quantity-sub') && editCartQuantity(e, -1),
       'cart-quantity': e.target.getAttribute('class').includes('cart-quantity') && addInputEventToCartEdit(e),
       'quantity-add': e.target.getAttribute('class').includes('quantity-add') && editCartQuantity(e, 1),
@@ -156,9 +96,13 @@ function editCartQuantity(e, constNum=0) {
   }
   
   if (!itemNewQuantity) {
-    deleteCartItem(itemId);
+    eventListener("deleteCartItem", {"id": itemId});
   } else {
-    editCartItem(itemId, itemNewQuantity);
+    // editCartItem(itemId, itemNewQuantity);
+    eventListener("editCartItem", {
+      "id": itemId,
+      "quantity": itemNewQuantity
+    });
   }
 }
 
@@ -359,7 +303,7 @@ function clearForm(formData) {
 
 function init() {
   getProductList();
-  getCartList();
+  eventListener("getCartList");
   addEventToCartEdit();
 }
 
