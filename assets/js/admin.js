@@ -44,13 +44,13 @@ function addEventToOrderEdit(order) {
   });
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
-    const orderEditListener = {
+    const getOrderEditListener = {
       'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && orderEditListener("deleteOrderItem", true, true, {"id": e.target.dataset.id}),
       'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && orderEditListener("deleteOrderAll", true, true),
       'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
       'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
     };
-    orderEditListener[e.target.getAttribute('class')];
+    getOrderEditListener[e.target.getAttribute('class')];
   });
 }
 
@@ -70,7 +70,8 @@ async function renderOrders(data) {
   }
   let tempOrderStr = generateTemp.orderThead();
   c3.setColumnsInit();
-  let dataSort = order.getOrderSort(data);
+  let filterData = order.getOrderFilter(orderSelect.value);
+  let dataSort = order.getOrderSort(filterData);
   dataSort.forEach( (item, index) => {
     tempOrderStr += generateTemp.orderItem(
       ...order.processOrderData(item, index), 
@@ -78,7 +79,7 @@ async function renderOrders(data) {
     );
   });
   delAllOrderBtn.textContent = "清除全部訂單";
-  searchNum.textContent = data.length;
+  searchNum.textContent = filterData.length;
   orderTable.innerHTML = tempOrderStr;
 }
 

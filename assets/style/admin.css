@@ -758,7 +758,8 @@ body {
 .orderPage-group {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .group {
