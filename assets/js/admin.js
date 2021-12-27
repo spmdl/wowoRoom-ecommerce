@@ -18,7 +18,7 @@ const menuOpenBtn = document.querySelector('.menuToggle');
 const menu = document.querySelector('.topBar-menu');
 
 //===== editOrder ===== //
-async function editOrderEvents(method, orderRender=true, c3Render=false, args={}) {
+async function orderEditListener(method, orderRender=true, c3Render=false, args={}) {
   try {
     let resDataRes = await api.getRequest(method, args);
     orderRender && await renderOrders(resDataRes.data.orders);
@@ -30,17 +30,17 @@ async function editOrderEvents(method, orderRender=true, c3Render=false, args={}
 
 //===== Listener ===== //
 function addEventToHamburger() {
-  menuOpenBtn.addEventListener('click', menuToggle(menu));
+  menuOpenBtn.addEventListener('click', menuToggle);
   menu.addEventListener('click', closeMenu(menu));
 }
 function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     const orderEditListener = {
-      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && editOrderEvents("deleteOrderItem", true, true, {"id": e.target.dataset.id}),
-      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && editOrderEvents("deleteOrderAll", true, true),
-      'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
-      'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && editOrderEvents("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
+      'delSingleOrder-Btn': e.target.getAttribute('class').includes('delSingleOrder-Btn') && orderEditListener("deleteOrderItem", true, true, {"id": e.target.dataset.id}),
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && orderEditListener("deleteOrderAll", true, true),
+      'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
+      'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
     };
     orderEditListener[e.target.getAttribute('class')];
   });
@@ -75,7 +75,7 @@ async function renderOrders(data) {
 }
 
 async function init() {
-  await editOrderEvents("getOrderListData", true, true);
+  await orderEditListener("getOrderListData", true, true);
   addEventToOrderEdit(order);
   addEventToHamburger();
 }
