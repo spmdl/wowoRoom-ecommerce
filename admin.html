@@ -25,7 +25,18 @@
     <div class="orderPage-list">
       <h2 class="section-title">全品項營收比重</h2>
       <div id="chart"></div>
-      <a href="javascript:void(0);" class="discardAllBtn">loading</a>
+      <div class="orderPage-group">
+        <div class="group">
+          <select name="" class="orderSelect">
+            <option value="all">全部</option>
+            <option value="true">已處理</option>
+            <option value="false">未處理</option>
+            <option value="lastMonth">最近一個月</option>
+          </select>
+          <p>共有 <span class="searchNum">3</span> 筆資料</p>
+        </div>
+        <button class="discardAllBtn">loading</button>
+      </div>
       <div class="orderTableWrap">
         <table class="orderPage-table"></table>
       </div>

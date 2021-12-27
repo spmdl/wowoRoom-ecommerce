@@ -13,14 +13,17 @@ let order = new Order();
 const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
+const orderSelect = document.querySelector(".orderSelect");
+const searchNum = document.querySelector(".searchNum");
 // hamburger menu
 const menuOpenBtn = document.querySelector('.menuToggle');
 const menu = document.querySelector('.topBar-menu');
 
-//===== editOrder ===== //
+//===== listener ===== //
 async function orderEditListener(method, orderRender=true, c3Render=false, args={}) {
   try {
     let resDataRes = await api.getRequest(method, args);
+    order.setOrderData(resDataRes.data.orders);
     orderRender && await renderOrders(resDataRes.data.orders);
     c3Render && (order.getOrderData().length > 0 ? c3.reload() : c3.destroy());
   } catch (error) {
@@ -28,12 +31,17 @@ async function orderEditListener(method, orderRender=true, c3Render=false, args=
   }
 }
 
-//===== Listener ===== //
+//===== event type ===== //
 function addEventToHamburger() {
   menuOpenBtn.addEventListener('click', menuToggle);
   menu.addEventListener('click', closeMenu(menu));
 }
 function addEventToOrderEdit(order) {
+  orderSelect.addEventListener('change', function(e) {
+    let filterData = order.getOrderFilter(e.target.value);
+    searchNum.textContent = filterData.length;
+    renderOrders(filterData);
+  });
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
     const orderEditListener = {
@@ -62,7 +70,6 @@ async function renderOrders(data) {
   }
   let tempOrderStr = generateTemp.orderThead();
   c3.setColumnsInit();
-  order.setOrderData(data);
   let dataSort = order.getOrderSort(data);
   dataSort.forEach( (item, index) => {
     tempOrderStr += generateTemp.orderItem(
@@ -70,7 +77,8 @@ async function renderOrders(data) {
       renderProductsTitle(item.products)
     );
   });
-  delAllOrderBtn.textContent = `清除全部 ${data.length} 筆訂單`;
+  delAllOrderBtn.textContent = "清除全部訂單";
+  searchNum.textContent = data.length;
   orderTable.innerHTML = tempOrderStr;
 }
 

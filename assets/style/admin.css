@@ -665,11 +665,12 @@ body {
 .discardAllBtn {
   display: inline-block;
   text-decoration: none;
-  padding: 5px 15px;
+  padding: 5px 22px;
   color: #000000;
   border: 1.3px solid #000000;
   border-radius: 5px;
-  font-size: 1.25rem;
+  background: transparent;
+  font-size: 18px;
 }
 
 .discardAllBtn:hover {
@@ -754,10 +755,15 @@ body {
           flex-direction: column;
 }
 
-.orderPage-list .discardAllBtn {
-  -ms-flex-item-align: end;
-      align-self: flex-end;
+.orderPage-group {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 12px;
+}
+
+.group {
+  display: flex;
+  align-items: center;
 }
 
 .orderPage-table {
@@ -778,6 +784,32 @@ body {
   }
 }
 /* FEATME: css */
+
+.orderSelect {
+  min-width: 140px;
+  height: 100%;
+  text-indent: 10px;
+  border-radius: 5px;
+  border: 1px solid #000000;
+  font-size: 18px;
+  color: #000000;
+
+  /* change icon */
+  -webkit-appearance:none; /* Safari and Chrome */
+  -moz-appearance:none; /* Firefox */
+  appearance: none;
+  background-image: url(../images/expand_more_black_24dp.svg);
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 20px 20px;
+}
+.orderSelect + p{
+  display: inline;
+  color: #818A91;
+  margin-left: 20px;
+  font-weight: 400;
+}
+
 .empty-order {
   text-align: center;
   font-size: 30px;

@@ -518,17 +518,28 @@ body {
 
 .productSelect {
   border: 1px solid #B9B9B9;
-  color: #797979;
+  color: #585858;
   min-height: 38px;
   min-width: 255px;
   border-radius: 5px;
   text-indent: 10px;
+  font-size: 16px;
   margin-bottom: 30px;
+
+  /* change icon */
+  -webkit-appearance:none; /* Safari and Chrome */
+  -moz-appearance:none; /* Firefox */
+  appearance: none;
+  background-image: url(../images/expand_more_black_24dp.svg);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px 20px;
 }
 .productSelect + p{
   display: inline;
   color: #818A91;
   margin-left: 20px;
+  font-weight: 400;
 }
 .productWrap {
   display: -webkit-box;

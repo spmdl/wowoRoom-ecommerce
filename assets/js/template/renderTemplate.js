@@ -47,7 +47,10 @@ export function orderItem(id, index, userName, userTel, userAddress, userEmail, 
         <a href="javascript:void(0);" data-index=${index} class="${paid ? 'orderStatus-done' : 'orderStatus-not'}">${paid ? "已處理" : "未處理"}</a>
       </td>
       <td>
-        <input type="button" class="delSingleOrder-Btn" value="刪除" data-id=${id}>
+        <div class="group">
+          <input type="button" class="delSingleOrder-Btn" value="刪除" data-id=${id}>
+          <!--<input type="button" class="delSingleOrder-Btn" value="編">-->
+        </div>
       </td>
     </tr>
   `;
