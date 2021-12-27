@@ -13,7 +13,8 @@ let order = new Order();
 const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
-const orderSelect = document.querySelector(".orderSelect");
+const orderFilterSelect = document.querySelector(".orderFilterSelect");
+const orderSortSelect = document.querySelector(".orderSortSelect");
 const searchNum = document.querySelector(".searchNum");
 // hamburger menu
 const menuOpenBtn = document.querySelector('.menuToggle');
@@ -37,7 +38,11 @@ function addEventToHamburger() {
   menu.addEventListener('click', closeMenu(menu));
 }
 function addEventToOrderEdit(order) {
-  orderSelect.addEventListener('change', function(e) {
+  orderSortSelect.addEventListener('change', function(e) {
+    // let sortData = order.getOrderSort(e.target.value);
+    renderOrders(order.getOrderData());
+  });
+  orderFilterSelect.addEventListener('change', function(e) {
     let filterData = order.getOrderFilter(e.target.value);
     searchNum.textContent = filterData.length;
     renderOrders(filterData);
@@ -70,8 +75,8 @@ async function renderOrders(data) {
   }
   let tempOrderStr = generateTemp.orderThead();
   c3.setColumnsInit();
-  let filterData = order.getOrderFilter(orderSelect.value);
-  let dataSort = order.getOrderSort(filterData);
+  let filterData = order.getOrderFilter(orderFilterSelect.value);
+  let dataSort = order.getOrderSort(filterData, orderSortSelect.value);
   dataSort.forEach( (item, index) => {
     tempOrderStr += generateTemp.orderItem(
       ...order.processOrderData(item, index), 

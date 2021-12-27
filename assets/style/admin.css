@@ -665,7 +665,7 @@ body {
 .discardAllBtn {
   display: inline-block;
   text-decoration: none;
-  padding: 5px 22px;
+  padding: 5px 14px;
   color: #000000;
   border: 1.3px solid #000000;
   border-radius: 5px;
@@ -786,8 +786,8 @@ body {
 }
 /* FEATME: css */
 
-.orderSelect {
-  min-width: 140px;
+.orderFilterSelect {
+  min-width: 130px;
   height: 100%;
   text-indent: 10px;
   border-radius: 5px;
@@ -804,11 +804,32 @@ body {
   background-position: right 6px center;
   background-size: 20px 20px;
 }
-.orderSelect + p{
+
+.orderFilterSelect + p{
   display: inline;
   color: #818A91;
   margin-left: 20px;
   font-weight: 400;
+}
+
+.orderSortSelect {
+  min-width: 130px;
+  height: 100%;
+  text-indent: 10px;
+  border-radius: 5px;
+  border: 1px solid #000000;
+  font-size: 18px;
+  color: #000000;
+  margin-right: 8px;
+
+  /* change icon */
+  -webkit-appearance:none; /* Safari and Chrome */
+  -moz-appearance:none; /* Firefox */
+  appearance: none;
+  background-image: url(../images/expand_more_black_24dp.svg);
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  background-size: 20px 20px;
 }
 
 .empty-order {

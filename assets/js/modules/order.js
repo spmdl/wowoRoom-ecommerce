@@ -3,13 +3,14 @@
 export default class Order {
   constructor() {
     this._orderData = [];
-    this._sortType = 'desc';
+    // this._sortType = 'desc';
   }
-  getOrderSort(data) {
+  getOrderSort(data, sortType) {
     const orderSort = {
-      'desc': data.sort((a, b) => { return b.createdAt - a.createdAt })
+      "desc": sortType == "desc" && data.sort((a, b) => { return b.createdAt - a.createdAt }),
+      "asc": sortType == "asc" && data.sort((a, b) => { return a.createdAt - b.createdAt })
     };
-    return orderSort[this._sortType];
+    return orderSort[sortType];
   }
 
   getOrderFilter(filterType, nowTime=new Date()) {

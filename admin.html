@@ -27,7 +27,7 @@
       <div id="chart"></div>
       <div class="orderPage-group">
         <div class="group">
-          <select name="" class="orderSelect">
+          <select name="" class="orderFilterSelect">
             <option value="all">全部</option>
             <option value="true">已處理</option>
             <option value="false">未處理</option>
@@ -35,7 +35,15 @@
           </select>
           <p>共有 <span class="searchNum">3</span> 筆資料</p>
         </div>
-        <button class="discardAllBtn">loading</button>
+        <div class="group">
+          <select name="" class="orderSortSelect">
+            <option value="desc">日期新到舊</option>
+            <option value="asc">日期舊到新</option>
+            <option value="descTotal">金額高到低</option>
+            <option value="ascTotal">金額低到高</option>
+          </select>
+          <button class="discardAllBtn">loading</button>
+        </div>
       </div>
       <div class="orderTableWrap">
         <table class="orderPage-table"></table>
