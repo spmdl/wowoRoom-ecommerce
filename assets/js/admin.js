@@ -20,13 +20,22 @@ const searchNum = document.querySelector(".searchNum");
 const menuOpenBtn = document.querySelector('.menuToggle');
 const menu = document.querySelector('.topBar-menu');
 
+//===== Decorator ===== //
+function checkOrdersEmpty(data) {
+  if (!data.length) {
+    orderList.innerHTML = generateTemp.orderEmpty();
+    return;
+  }
+  renderOrders(order.processOrderData(data, orderFilterSelect.value, orderSortSelect.value));
+}
+
 //===== listener ===== //
 async function orderEditListener(method, orderRender=true, c3Render=false, args={}) {
   try {
     let resDataRes = await api.getRequest(method, args);
-    order.setOrderData(resDataRes.data.orders);
-    orderRender && await renderOrders(resDataRes.data.orders);
-    c3Render && (order.getOrderData().length > 0 ? c3.reload() : c3.destroy());
+    order.setOriginData(resDataRes.data.orders);
+    orderRender && checkOrdersEmpty(resDataRes.data.orders);
+    c3Render && (resDataRes.data.orders.length > 0 ? c3.reload() : c3.destroy());
   } catch (error) {
     throw error;
   }
@@ -38,14 +47,20 @@ function addEventToHamburger() {
   menu.addEventListener('click', closeMenu(menu));
 }
 function addEventToOrderEdit(order) {
-  orderSortSelect.addEventListener('change', function(e) {
-    // let sortData = order.getOrderSort(e.target.value);
-    renderOrders(order.getOrderData());
-  });
-  orderFilterSelect.addEventListener('change', function(e) {
-    let filterData = order.getOrderFilter(e.target.value);
-    searchNum.textContent = filterData.length;
-    renderOrders(filterData);
+  orderSortSelect.addEventListener('change', e => renderOrders(order.processOrderData(
+      order.getOriginData(), 
+      orderFilterSelect.value, 
+      e.target.value
+    ))
+  );
+  orderFilterSelect.addEventListener('change', e => {
+    let retData = order.processOrderData(
+      order.getOriginData(), 
+      e.target.value, 
+      orderSortSelect.value
+    );
+    searchNum.textContent = retData.length;
+    renderOrders(retData);
   });
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
@@ -68,23 +83,18 @@ function renderProductsTitle(products) {
   });
   return tempProductsTitle;
 }
-async function renderOrders(data) {
-  if (!data.length) {
-    orderList.innerHTML = generateTemp.orderEmpty();
-    return;
-  }
+
+function renderOrders(data) {
   let tempOrderStr = generateTemp.orderThead();
   c3.setColumnsInit();
-  let filterData = order.getOrderFilter(orderFilterSelect.value);
-  let dataSort = order.getOrderSort(filterData, orderSortSelect.value);
-  dataSort.forEach( (item, index) => {
+  data.forEach( (item, index) => {
     tempOrderStr += generateTemp.orderItem(
-      ...order.processOrderData(item, index), 
+      ...order.setProductData(item, index), 
       renderProductsTitle(item.products)
     );
   });
   delAllOrderBtn.textContent = "清除全部訂單";
-  searchNum.textContent = filterData.length;
+  searchNum.textContent = data.length;
   orderTable.innerHTML = tempOrderStr;
 }
 

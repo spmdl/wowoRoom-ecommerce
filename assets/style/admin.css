@@ -671,6 +671,7 @@ body {
   border-radius: 5px;
   background: transparent;
   font-size: 18px;
+  cursor: pointer;
 }
 
 .discardAllBtn:hover {
@@ -794,6 +795,7 @@ body {
   border: 1px solid #000000;
   font-size: 18px;
   color: #000000;
+  cursor: pointer;
 
   /* change icon */
   -webkit-appearance:none; /* Safari and Chrome */
@@ -820,6 +822,7 @@ body {
   border: 1px solid #000000;
   font-size: 18px;
   color: #000000;
+  cursor: pointer;
   margin-right: 8px;
 
   /* change icon */

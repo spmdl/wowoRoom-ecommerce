@@ -2,51 +2,30 @@
 
 export default class Order {
   constructor() {
-    this._orderData = [];
-  }
-  getOrderSort(data, sortType) {
-    const orderSort = {
-      "desc": sortType == "desc" && data.sort((a, b) => { return b.createdAt - a.createdAt }),
-      "asc": sortType == "asc" && data.sort((a, b) => { return a.createdAt - b.createdAt }),
-      "descTotal": sortType == "descTotal" && data.sort((a, b) => { return b.total - a.total }),
-      "ascTotal": sortType == "ascTotal" && data.sort((a, b) => { return a.total - b.total }),
-    };
-    return orderSort[sortType];
+    this._originOrderData = [];
+    this._renderOrderData = [];
   }
 
-  getOrderFilter(filterType, nowTime=new Date()) {
-    const orderFilter = {
-      "all": this._orderData,
-      "false": this._orderData.filter(item => item.paid === false),
-      "true": this._orderData.filter(item => item.paid === true),
-      "lastMonth": this._orderData.filter(item => {
-        const oldTime = new Date(item.createdAt * 1000);
-        return parseInt(Math.abs((nowTime - oldTime) / (1000 * 60 * 60 * 24))) <= 30;
-      }),
-    };
-    return orderFilter[filterType.toString()];
-  }
-  
-  getOrderData() {
-    return this._orderData;
+  getOriginData() {
+    return this._originOrderData;
   }
 
   getOrderStatus(index) {
-    const id = this._orderData[index].id;
-    const status = !this._orderData[index].paid
+    const id = this._renderOrderData[index].id;
+    const status = !this._renderOrderData[index].paid
     return { id, status};
   }
   
-  setOrderData(data) {
-    this._orderData = data;
+  _setRenderData(data) {
+    this._renderOrderData = data;
   }
 
-  _processTime() {
-    const time = new Date(item.createdAt * 1000);
+  setOriginData(data) {
+    this._originOrderData = data;
   }
 
-  processOrderData(item, index) {
-    const time = new Date(item.createdAt * 1000);
+  setProductData(item, index) {
+    const time = this._unixToMillisecond(item.createdAt);
     return [
       item.id, 
       index, 
@@ -59,5 +38,48 @@ export default class Order {
       time.toLocaleTimeString(), 
       item.paid
     ];
+  }
+
+  _processOrderSort(data, sortType) {
+    switch (sortType) {
+      case "desc":
+        return data.sort((a, b) => { return b.createdAt - a.createdAt });
+      case "asc":
+        return data.sort((a, b) => { return a.createdAt - b.createdAt });
+      case "descTotal":
+        return data.sort((a, b) => { return b.total - a.total });
+      case "ascTotal":
+        return data.sort((a, b) => { return a.total - b.total });
+    };
+  }
+
+  _processOrderFilter(data, filterType) {
+    const nowTime = new Date()
+    const orderFilter = {
+      "all": data,
+      "false": data.filter(item => item.paid === false),
+      "true": data.filter(item => item.paid === true),
+      "lastMonth": data.filter(item => {
+        const oldTime = this._unixToMillisecond(item.createdAt);
+        return this._diffDays(nowTime, oldTime, 30);
+      }),
+    };
+    return orderFilter[filterType.toString()];
+  }
+  
+  processOrderData(data, filterType, sortType) {
+    let retData = [...data];
+    let filterData = this._processOrderFilter(retData, filterType);
+    retData = this._processOrderSort(filterData, sortType);
+    this._setRenderData(retData);
+    return retData;
+  }
+
+  _unixToMillisecond(itemTime) {
+    return new Date(itemTime * 1000);
+  }
+
+  _diffDays(nowTime, oldTime, difference) {
+    return parseInt(Math.abs((nowTime - oldTime) / (1000 * 60 * 60 * 24))) <= difference;
   }
 }
