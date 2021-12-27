@@ -40,16 +40,29 @@ export default class Order {
     ];
   }
 
+  _dateDescSort(data) {
+    return data.sort((a, b) => { return b.createdAt - a.createdAt });
+  }
+  _dateAscSort(data) {
+    return data.sort((a, b) => { return a.createdAt - b.createdAt });
+  }
+  _totalDescSort(data) {
+    return data.sort((a, b) => { return b.total - a.total });
+  }
+  _totalAscSort(data) {
+    return data.sort((a, b) => { return a.total - b.total });
+  }
+
   _processOrderSort(data, sortType) {
     switch (sortType) {
-      case "desc":
-        return data.sort((a, b) => { return b.createdAt - a.createdAt });
-      case "asc":
-        return data.sort((a, b) => { return a.createdAt - b.createdAt });
+      case "descDate":
+        return this._dateDescSort(data);
+      case "ascDate":
+        return this._dateAscSort(data);
       case "descTotal":
-        return data.sort((a, b) => { return b.total - a.total });
+        return this._totalDescSort(data);
       case "ascTotal":
-        return data.sort((a, b) => { return a.total - b.total });
+        return this._totalAscSort(data);
     };
   }
 
@@ -64,7 +77,7 @@ export default class Order {
         return this._diffDays(nowTime, oldTime, 30);
       }),
     };
-    return orderFilter[filterType.toString()];
+    return orderFilter[filterType];
   }
   
   processOrderData(data, filterType, sortType) {

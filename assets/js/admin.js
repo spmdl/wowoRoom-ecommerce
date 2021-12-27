@@ -32,10 +32,10 @@ function checkOrdersEmpty(data) {
 //===== listener ===== //
 async function orderEditListener(method, orderRender=true, c3Render=false, args={}) {
   try {
-    let resDataRes = await api.getRequest(method, args);
-    order.setOriginData(resDataRes.data.orders);
-    orderRender && checkOrdersEmpty(resDataRes.data.orders);
-    c3Render && (resDataRes.data.orders.length > 0 ? c3.reload() : c3.destroy());
+    let resData = await api.getRequest(method, args);
+    order.setOriginData(resData.data.orders);
+    orderRender && checkOrdersEmpty(resData.data.orders);
+    c3Render && (resData.data.orders.length > 0 ? c3.reload() : c3.destroy());
   } catch (error) {
     throw error;
   }
