@@ -3,7 +3,7 @@
 export default function Chart() {
   this._colors = ["#DACBFF", "#9D7FEA", "#5434A7", "#301E5F"];
   this._chartColumns = {};
-  this.chart =  c3.generate({
+  this._chart =  c3.generate({
     bindto: '#chart',
     data: {
       type: "pie",
@@ -21,16 +21,15 @@ export default function Chart() {
 };
 
 Chart.prototype.unload = function () {
-  this.chart.unload();
+  this._chart.unload();
 };
 
 Chart.prototype.destroy = function () {
-  this.chart.destroy();
+  this._chart.destroy();
 };
 
 Chart.prototype.reload = function () {
-  console.log(this._chartColumns);
-  this.chart.load({
+  this._chart.load({
     unload: true,
     columns: this._processColumnData(this._chartColumns),
   });

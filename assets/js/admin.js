@@ -1,6 +1,7 @@
 //===== Module ===== //
 import * as api from './api/dataService.js';
-import Chart from './modules/c3.js';
+import Chart from './component/c3.js';
+import { closeMenu, menuToggle } from './component/hamburgerMenu.js';
 import Order from './modules/order.js';
 import * as generateTemp from './template/renderTemplate.js';
 
@@ -8,9 +9,13 @@ let c3 = new Chart();
 let order = new Order();
 
 //===== DOM ===== //
+// order
 const orderTable = document.querySelector(".orderPage-table");
 const delAllOrderBtn =document.querySelector(".discardAllBtn");
 const orderList = document.querySelector(".orderPage-list");
+// hamburger menu
+const menuOpenBtn = document.querySelector('.menuToggle');
+const menu = document.querySelector('.topBar-menu');
 
 //===== editOrder ===== //
 async function editOrderEvents(method, orderRender=true, c3Render=false, args={}) {
@@ -24,6 +29,10 @@ async function editOrderEvents(method, orderRender=true, c3Render=false, args={}
 }
 
 //===== Listener ===== //
+function addEventToHamburger() {
+  menuOpenBtn.addEventListener('click', menuToggle(menu));
+  menu.addEventListener('click', closeMenu(menu));
+}
 function addEventToOrderEdit(order) {
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }
@@ -46,7 +55,7 @@ function renderProductsTitle(products) {
   });
   return tempProductsTitle;
 }
-function renderOrders(data) {
+async function renderOrders(data) {
   if (!data.length) {
     orderList.innerHTML = generateTemp.orderEmpty();
     return;
@@ -68,6 +77,7 @@ function renderOrders(data) {
 async function init() {
   await editOrderEvents("getOrderListData", true, true);
   addEventToOrderEdit(order);
+  addEventToHamburger();
 }
 
 init();
