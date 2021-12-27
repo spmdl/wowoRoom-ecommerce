@@ -3,12 +3,13 @@
 export default class Order {
   constructor() {
     this._orderData = [];
-    // this._sortType = 'desc';
   }
   getOrderSort(data, sortType) {
     const orderSort = {
       "desc": sortType == "desc" && data.sort((a, b) => { return b.createdAt - a.createdAt }),
-      "asc": sortType == "asc" && data.sort((a, b) => { return a.createdAt - b.createdAt })
+      "asc": sortType == "asc" && data.sort((a, b) => { return a.createdAt - b.createdAt }),
+      "descTotal": sortType == "descTotal" && data.sort((a, b) => { return b.total - a.total }),
+      "ascTotal": sortType == "ascTotal" && data.sort((a, b) => { return a.total - b.total }),
     };
     return orderSort[sortType];
   }
