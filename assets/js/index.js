@@ -19,6 +19,14 @@ function checkEditCartQuantity(oldValue) {
   }
 }
 
+function checkCartsEmpty(data) {
+  if (!data.carts.length) {
+    cartList.innerHTML = generateTemp.tableCartEmpty();
+    return;
+  }
+  renderCart(data);
+}
+
 //===== listener ===== //
 async function getProductList() {
   try {
@@ -50,8 +58,8 @@ function editCartQuantity(e, diffNum=0) {
 async function productEditListener(method, args={}) {
   try {
     let resData = await getCustomerRequest(method, args);
-    console.log(resData);
-    renderCart(resData.data);
+    cart.setCartsData(resData.data);
+    checkCartsEmpty(resData.data);
   } catch (error) {
     throw error;
   }
@@ -83,6 +91,7 @@ function changeCategorySelect(e) {
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
     if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
+      console.log(e.target.dataset.id, cart.getProductQuantity(e.target.dataset.id, 1));
       productEditListener("addCartItem", {
         "productId": e.target.dataset.id,
         "quantity": cart.getProductQuantity(e.target.dataset.id, 1)
@@ -115,7 +124,7 @@ function addEventToCartEdit() {
   });
 }
 
-// FIXME: template
+//===== render view ===== //
 function renderCategorySelect(categories) {
   let productSelectStr = "";
   let retCategories = ["全部", ...categories];
@@ -135,22 +144,15 @@ function renderProduct(data) {
 
 function renderCart(data) {
   let cartStr = "";
-  let totalPrice = 0;
-  cart.setCartsData(data);
-  if (data.carts.length) {
-    data.carts.forEach( (item, index) => {
-      let amountPrice = item.quantity * item.product.price;
-      totalPrice += amountPrice;
-      cartStr += generateTemp.tbodyCarts(item.id, index, item.category, item.product.images, item.product.title, item.product.price, item.quantity, amountPrice);
-    });
-    cartList.innerHTML = `
-      ${generateTemp.theadCarts()}
-      ${cartStr}
-      ${generateTemp.tfootCarts(totalPrice)}
-    ` ;
-  } else {
-    cartList.innerHTML = generateTemp.tableCartEmpty();
-  }
+  data.carts.forEach( (item, index) => cartStr += generateTemp.tbodyCarts(
+    item.quantity * item.product.price, 
+    item.id, index, item.category, item.product.images, item.product.title, item.product.price, item.quantity
+  ));
+  cartList.innerHTML = `
+    ${generateTemp.theadCarts()}
+    ${cartStr}
+    ${generateTemp.tfootCarts(data.finalTotal)}
+  `;
 }
 
 // 監聽 form 每個欄位
@@ -201,7 +203,6 @@ function invisibleError(e) {
 }
 
 creatOrderBtn.addEventListener("click", function(e) {
-  // 防止跳到頁面最上方
   e.preventDefault();
   let orderData = new processFormData(orderForm);
   if (validationFalseNum === 0) {

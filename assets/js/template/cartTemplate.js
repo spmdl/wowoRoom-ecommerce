@@ -37,7 +37,7 @@ export function theadCarts() {
   `;
 }
 
-export function tbodyCarts(id, index, category, imgUrl, title, price, quantity, totalPrice) {
+export function tbodyCarts(totalPrice, id, index, category, imgUrl, title, price, quantity) {
   return `
     <tr>
         <td>
