@@ -7,16 +7,14 @@ let searchNum = document.querySelector(".searchNum");
 const cartList = document.querySelector(".shoppingCart-table");
 const productList = document.querySelector(".productWrap");
 const creatOrderBtn = document.querySelector(".orderInfo-btn");
-let productsData = [];
 let cart = new Cart();
 
 //===== Decorator ===== //
 function checkEditCartQuantity(oldValue) {
   return function(e) {
     let diffNum = parseInt(e.target.value) - parseInt(oldValue);
-    if (diffNum) {
-      editCartQuantity(e, diffNum);
-    }
+    if (!diffNum) { return }
+    editCartQuantity(e, diffNum);
   }
 }
 
@@ -24,9 +22,9 @@ function checkEditCartQuantity(oldValue) {
 async function getProductList() {
   try {
     let resData = await getCustomerRequest("getProductList");
-    let categories = renderProduct(resData.data.products);
-    productsData = resData.data.products;
-    renderCategorySelect(categories);
+    cart.setProductsData(resData.data.products);
+    renderProduct(resData.data.products);
+    renderCategorySelect(cart.getCategories());
   } catch (error) {
     throw error;
   }
@@ -74,8 +72,10 @@ async function createOrder(name="五角", tel="07-5313506", email="hexschool@hex
   }
 }
 
-function inputCartEdit() {
-
+function changeCategorySelect(e) {
+  let filterData = cart.processCategoriesData(e.target.value);;
+  searchNum.textContent = `${filterData.length}`;
+  renderProduct(filterData);
 }
 
 //===== event type ===== //
@@ -96,9 +96,13 @@ function addEventToInput(e) {
   });
 }
 
+function addEventToProductSelect() { 
+  productSelect.addEventListener("change", changeCategorySelect);
+}
+
+
 function addEventToCartEdit() { 
   cartList.addEventListener("click", e => {
-    console.log("click");
     if (!e.target.getAttribute('class')) { return; }
     const cartEditListener = {
       'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && productEditListener("deleteAllCartList"),
@@ -111,18 +115,6 @@ function addEventToCartEdit() {
   });
 }
 
-function changeCategorySelect(e) {
-  let value = e.target.value;
-  let filterData = [];
-  if (value === "全部") {
-    filterData = productsData;
-  } else {
-    filterData = productsData.filter((item) => item.category === value);
-  }
-  searchNum.textContent = `${filterData.length}`;
-  renderProduct(filterData);
-}
-
 function renderCategorySelect(categories) {
   let productSelectStr = `<option value="全部" selected>全部</option>`;
   categories.forEach((item) => {
@@ -131,7 +123,6 @@ function renderCategorySelect(categories) {
     `;
   });
   productSelect.innerHTML = productSelectStr;
-  productSelect.addEventListener("change", changeCategorySelect);
 }
 
 function generateProduct(id, imgUrl, title, originPrice, price) {
@@ -149,18 +140,12 @@ function generateProduct(id, imgUrl, title, originPrice, price) {
 
 function renderProduct(data) {
   let productStr = "";
-  let categories = [];
   data.forEach( item => {
-    if (!categories.includes(item.category)) {
-      categories.push(item.category);
-    }
+    cart.setCategories(item.category);
     productStr += generateProduct(item.id, item.images, item.title, item.origin_price, item.price);
   });
   searchNum.textContent = `${data.length}`;
   productList.innerHTML = productStr;
-  addEventToCartBtn();
-  
-  return categories;
 }
 
 // TODO: cart edit
@@ -308,6 +293,8 @@ function clearForm(formData) {
 
 function init() {
   getProductList();
+  addEventToCartBtn();
+  addEventToProductSelect();
   productEditListener("getCartList");
   addEventToCartEdit();
 }
