@@ -1,14 +1,27 @@
 //===== Module ===== //
 import { getCustomerRequest } from './api/dataService.js';
-import Cart from './modules/cart.js';
 import * as generateTemp from './template/cartTemplate.js';
+import Cart from './modules/cart.js';
+import Validator from './modules/formValidator.js';
 
+// product DOM
 const productSelect = document.querySelector(".productSelect");
-let searchNum = document.querySelector(".searchNum");
+const searchNum = document.querySelector(".searchNum");
+// cart DOM
 const cartList = document.querySelector(".shoppingCart-table");
 const productList = document.querySelector(".productWrap");
+
+// form DOM
+const orderForm = document.forms['orderForm'];
+const customerName = document.getElementById("customerName");
+const customerPhone = document.getElementById("customerPhone");
+const customerEmail = document.getElementById("customerEmail");
+const customerAddress = document.getElementById("customerAddress");
 const creatOrderBtn = document.querySelector(".orderInfo-btn");
+
+//===== Module instance ===== //
 let cart = new Cart();
+let validator = new Validator();
 
 //===== Decorator ===== //
 function checkEditCartQuantity(oldValue) {
@@ -33,7 +46,6 @@ async function getProductList() {
     let resData = await getCustomerRequest("getProductList");
     cart.setProductsData(resData.data.products);
     renderProduct(resData.data.products);
-    renderCategorySelect(cart.getCategories());
   } catch (error) {
     throw error;
   }
@@ -75,7 +87,7 @@ async function createOrder(name="五角", tel="07-5313506", email="hexschool@hex
       "payment": payment
     });
     productEditListener("getCartList");
-    clearForm(orderForm);
+    validator.clearForm(orderForm);
   } catch (error) {
     throw error;
   }
@@ -91,7 +103,6 @@ function changeCategorySelect(e) {
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
     if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
-      console.log(e.target.dataset.id, cart.getProductQuantity(e.target.dataset.id, 1));
       productEditListener("addCartItem", {
         "productId": e.target.dataset.id,
         "quantity": cart.getProductQuantity(e.target.dataset.id, 1)
@@ -121,6 +132,20 @@ function addEventToCartEdit() {
       'quantity-add': e.target.getAttribute('class').includes('quantity-add') && editCartQuantity(e, 1),
     };
     cartEditListener[e.target.getAttribute('class')];
+  });
+}
+
+function addEventToForm() { 
+  customerName.addEventListener("change", function(e){ validator.invisibleError(e) });
+  customerPhone.addEventListener("change", function(e){ validator.invisibleError(e) });
+  customerEmail.addEventListener("change", function(e){ validator.invisibleError(e) });
+  customerAddress.addEventListener("change", function(e){ validator.invisibleError(e) });
+  creatOrderBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (validator.getValidationFalseNum() === 0) {
+      let orderData = validator.processFormData(orderForm);
+      createOrder(orderData.name, orderData.tel, orderData.email, orderData.address, orderData.payment);
+    }
   });
 }
 
@@ -155,88 +180,18 @@ function renderCart(data) {
   `;
 }
 
-// 監聽 form 每個欄位
-let validationFalseNum = 4;
-const orderForm = document.forms['orderForm'];
-const submitBtn = document.getElementById("submitBtn");
-const customerName = document.getElementById("customerName");
-const customerPhone = document.getElementById("customerPhone");
-const customerEmail = document.getElementById("customerEmail");
-const customerAddress = document.getElementById("customerAddress");
-
-customerName.addEventListener("change", invisibleError);
-customerPhone.addEventListener("change", invisibleError);
-customerEmail.addEventListener("change", invisibleError);
-customerAddress.addEventListener("change", invisibleError);
-
-// 驗證判斷式
-function customerDataValidation(customerName, customerData) {
-  const phoneReg = /^(\d{2,3}-?|\(\d{2,3}\))\d{3,4}-?\d{4}|09\d{2}(\d{6}|-\d{3}-\d{3})$/;
-  // const emailReg = /^([^.][a-z].?[a-z.]+)@(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})$/;
-  const emailReg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z]+$/;
-  const validation = {
-      'customerName': customerData === "" ? false : true ,
-      'customerPhone': !phoneReg.test(customerData) ? false : true ,
-      'customerEmail': !emailReg.test(customerData) ? false : true,
-      'customerAddress': customerData === "" ? false : true ,
-  }
-  return validation[customerName];
-}
-
-// 切換錯誤提示
-function invisibleError(e) {
-  const customerDom = document.getElementById(`${e.target.id}-message`);
-  const retValidation = customerDataValidation(e.target.id, e.target.value);
-  const retInvisible = customerDom.getAttribute("class").includes('invisible');
-  if (retValidation && !retInvisible) {
-    // 驗證有過、現在有錯誤提示
-    customerDom.classList.add('invisible');
-    validationFalseNum -= 1;
-  } else if (!retValidation && retInvisible) {
-    // 驗證沒過、現在沒有錯誤提示
-    customerDom.classList.remove('invisible');
-    validationFalseNum += 1;
-  }
-  if (validationFalseNum === 0) {
-    submitBtn.removeAttribute('disabled');
-  }
-}
-
-creatOrderBtn.addEventListener("click", function(e) {
-  e.preventDefault();
-  let orderData = new processFormData(orderForm);
-  if (validationFalseNum === 0) {
-    createOrder(orderData.name, orderData.tel, orderData.email, orderData.address, orderData.payment);
-  }
-});
-
-class processFormData {
-  constructor(form) {
-    this.name = form.elements.姓名.value;
-    this.tel = form.elements.電話.value;
-    this.email = form.elements.Email.value;
-    this.address = form.elements.寄送地址.value;
-    this.payment = form.elements.交易方式.value;
-  }
-}
-
-function clearForm(formData) {
-  formData.reset();
-  validationFalseNum = 4;
-  //  把驗證提示訊息重新顯示
-  document.getElementById("customerName-message").classList.remove('invisible');
-  document.getElementById("customerPhone-message").classList.remove('invisible');
-  document.getElementById("customerEmail-message").classList.remove('invisible');
-  document.getElementById("customerAddress-message").classList.remove('invisible');
-  submitBtn.setAttribute("disabled", "");
-}
-
-function init() {
-  getProductList();
+async function init() {
+  // product
+  await getProductList();
   addEventToCartBtn();
+  // category select
+  renderCategorySelect(cart.getCategories());
   addEventToProductSelect();
+  // cart
   productEditListener("getCartList");
   addEventToCartEdit();
+  // form
+  addEventToForm();
 }
 
 init();
