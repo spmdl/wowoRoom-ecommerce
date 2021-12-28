@@ -28,7 +28,7 @@ export function orderThead() {
   `;
 }
 
-export function orderItem(id, index, userName, userTel, userAddress, userEmail, products, productDate, productTime, paid, productsTitle) {
+export function orderItem(id, index, userName, userTel, userAddress, userEmail, productDate, productTime, paid, productsTitle) {
   return `
     <tr>
       <td>${id}</td>
