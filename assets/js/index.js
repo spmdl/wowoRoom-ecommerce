@@ -1,6 +1,6 @@
 //===== Module ===== //
 import { getCustomerRequest } from './api/dataService.js';
-// import Cart from './modules/cart.js';
+import Cart from './modules/cart.js';
 
 const productSelect = document.querySelector(".productSelect");
 let searchNum = document.querySelector(".searchNum");
@@ -8,27 +8,47 @@ const cartList = document.querySelector(".shoppingCart-table");
 const productList = document.querySelector(".productWrap");
 const creatOrderBtn = document.querySelector(".orderInfo-btn");
 let productsData = [];
-let cartsData = [];
+let cart = new Cart();
+
+//===== Decorator ===== //
+function checkEditCartQuantity(oldValue) {
+  return function(e) {
+    let diffNum = parseInt(e.target.value) - parseInt(oldValue);
+    if (diffNum) {
+      editCartQuantity(e, diffNum);
+    }
+  }
+}
 
 //===== listener ===== //
-async function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool.com", address="高雄市六角學院路", payment="Apple Pay") {
-  let resData = await getCustomerRequest("createOrder", {
-    "name": name,
-    "tel": tel,
-    "email": email,
-    "address": address,
-    "payment": payment
-  });
-  eventListener("getCartList");
-  clearForm(orderForm);
-}
 async function getProductList() {
-  let resData = await getCustomerRequest("getProductList");
-  let categories = renderProduct(resData.data.products);
-  productsData = resData.data.products;
-  renderCategorySelect(categories);
+  try {
+    let resData = await getCustomerRequest("getProductList");
+    let categories = renderProduct(resData.data.products);
+    productsData = resData.data.products;
+    renderCategorySelect(categories);
+  } catch (error) {
+    throw error;
+  }
 }
-async function eventListener(method, args={}) {
+
+function editCartQuantity(e, diffNum=0) {
+  let itemIndex = e.target.parentNode.dataset.index;
+  let itemId = cart.getProductId(itemIndex);
+  let retQuantity = cart.getCartQuantity(itemIndex) + diffNum;
+  if (retQuantity) {
+    productEditListener("editCartItem", {
+      "id": itemId,
+      "quantity": retQuantity
+    });
+  } else {
+    productEditListener("deleteCartItem", {
+      "id": itemId
+    });
+  }
+}
+
+async function productEditListener(method, args={}) {
   try {
     let resData = await getCustomerRequest(method, args);
     console.log(resData);
@@ -38,72 +58,57 @@ async function eventListener(method, args={}) {
   }
 }
 
-// addEventListener
+async function createOrder(name="五角", tel="07-5313506", email="hexschool@hexschool.com", address="高雄市六角學院路", payment="Apple Pay") {
+  try {
+    await getCustomerRequest("createOrder", {
+      "name": name,
+      "tel": tel,
+      "email": email,
+      "address": address,
+      "payment": payment
+    });
+    productEditListener("getCartList");
+    clearForm(orderForm);
+  } catch (error) {
+    throw error;
+  }
+}
+
+function inputCartEdit() {
+
+}
+
+//===== event type ===== //
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
     if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
-      // addCartItem(getCartItemData(e));
-      eventListener("addCartItem", getCartItemData(e));
+      productEditListener("addCartItem", {
+        "productId": e.target.dataset.id,
+        "quantity": cart.getProductQuantity(e.target.dataset.id, 1)
+      });
     }
   });
 }
 
-function addInputEventToCartEdit(e) {
-  e.target.addEventListener('blur', editCartQuantity);
-  e.target.addEventListener('keydown', function(e){
-    // set Enter key as edit Cart
-    if (e.keyCode === 13) {
-      editCartQuantity(e);
-      e.target.blur();
-    }
-  }, false);
+function addEventToInput(e) { 
+  e.target.addEventListener('change', checkEditCartQuantity(e.target.value), {
+    once: true
+  });
 }
 
 function addEventToCartEdit() { 
   cartList.addEventListener("click", e => {
+    console.log("click");
     if (!e.target.getAttribute('class')) { return; }
     const cartEditListener = {
-      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && eventListener("deleteAllCartList"),
-      'discardBtn': e.target.getAttribute('class').includes('discardBtn') && eventListener("deleteCartItem", {"id": e.target.dataset.id}),
+      'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && productEditListener("deleteAllCartList"),
+      'discardBtn': e.target.getAttribute('class').includes('discardBtn') && productEditListener("deleteCartItem", {"id": e.target.dataset.id}),
       'quantity-sub': e.target.getAttribute('class').includes('quantity-sub') && editCartQuantity(e, -1),
-      'cart-quantity': e.target.getAttribute('class').includes('cart-quantity') && addInputEventToCartEdit(e),
+      'cart-quantity': e.target.getAttribute('class').includes('cart-quantity') && addEventToInput(e),
       'quantity-add': e.target.getAttribute('class').includes('quantity-add') && editCartQuantity(e, 1),
     };
     cartEditListener[e.target.getAttribute('class')];
   });
-}
-
-function getCartItemData(e) {
-  let productId = e.target.dataset.id;
-  let productIndex = cartsData.carts.findIndex(function(item) {
-    return item.product.id == productId
-  });
-  let constQuantity = productIndex === -1 ? 1 : Number(cartsData.carts[productIndex].quantity) + 1; 
-  return {
-    "productId": productId,
-    "quantity": constQuantity
-  };
-}
-
-function editCartQuantity(e, constNum=0) {
-  let itemIndex = e.target.parentNode.dataset.index;
-  let itemId = cartsData.carts[itemIndex].id;
-  let itemNewQuantity = Number(e.target.parentNode.querySelector('.cart-quantity').value) + constNum;
-  let itemOldQuantity = Number(cartsData.carts[itemIndex].quantity);
-  
-  if (itemNewQuantity === itemOldQuantity ) { 
-    return;
-  }
-  
-  if (!itemNewQuantity) {
-    eventListener("deleteCartItem", {"id": itemId});
-  } else {
-    // editCartItem(itemId, itemNewQuantity);
-    eventListener("editCartItem", {
-      "id": itemId,
-      "quantity": itemNewQuantity
-    });
-  }
 }
 
 function changeCategorySelect(e) {
@@ -183,7 +188,7 @@ function generateCart(id, index, category, imgUrl, title, price, quantity, total
 function renderCart(data) {
   let cartStr = "";
   let totalPrice = 0;
-  cartsData = data;
+  cart.setCartsData(data);
   if (data.carts.length) {
     data.carts.forEach( (item, index) => {
       let amountPrice = item.quantity * item.product.price;
@@ -303,7 +308,7 @@ function clearForm(formData) {
 
 function init() {
   getProductList();
-  eventListener("getCartList");
+  productEditListener("getCartList");
   addEventToCartEdit();
 }
 

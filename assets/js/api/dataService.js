@@ -104,6 +104,5 @@ export async function getCustomerRequest(method, args={}) {
           }
         }
       });
-    
   }
 }
