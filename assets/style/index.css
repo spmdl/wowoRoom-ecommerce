@@ -845,6 +845,11 @@ body {
   display: none;
 }
 /* FEATME: css */
+
+.cart-quantity::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
 .invisible {
   visibility: hidden !important;
 }

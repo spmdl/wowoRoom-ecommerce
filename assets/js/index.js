@@ -36,7 +36,8 @@ function checkEditCartQuantityRequest(data) {
     });
   }
 }
-function checkEditCartQuantity(oldValue) {
+function checkEditCartQuantity(e, oldValue) {
+  console.log(parseInt(e.target.value), parseInt(oldValue));
   let diffNum = parseInt(e.target.value) - parseInt(oldValue);
   if (!diffNum) { return }
   checkEditCartQuantityRequest(cart.processEditCartQuantity(e, diffNum))
@@ -50,11 +51,11 @@ function checkCartsEmpty(data) {
   renderCart(data);
 }
 
-async function checkFormValidation(e) {
+function checkFormValidation(e) {
   e.preventDefault();
   if (validator.getValidationFalseNum() !== 0) { return }
   let orderData = validator.processFormDataToObj(orderForm);
-  await createOrder(orderData.name, orderData.tel, orderData.email, orderData.address, orderData.payment);
+  createOrder(orderData.name, orderData.tel, orderData.email, orderData.address, orderData.payment);
 }
 
 //===== listener ===== //
@@ -99,6 +100,16 @@ function changeCategorySelect(e) {
   renderProduct(filterData);
 }
 
+function changeInvisibleError(e) {
+  const customerDom = document.getElementById(`${e.target.id}-message`);
+  const retValidation = validator.checkDataValidation(e.target.id, e.target.value);
+  const retInvisible = customerDom.getAttribute("class").includes('invisible');
+
+  retValidation && !retInvisible && renderHideValidationError(customerDom);
+  !retValidation && retInvisible && renderShowValidationError(customerDom);
+  validator.getValidationFalseNum() === 0 && renderShowSubmitBtn();
+}
+
 //===== event type ===== //
 function addEventToCartBtn() {
   productList.addEventListener("click", e => {
@@ -112,7 +123,9 @@ function addEventToCartBtn() {
 }
 
 function addEventToInput(e) { 
-  e.target.addEventListener('change', checkEditCartQuantity(e.target.value), {
+  let oldValue = e.target.value;
+  e.target.addEventListener('change', 
+  function(e){ checkEditCartQuantity(e, oldValue) }, {
     once: true
   });
 }
@@ -136,10 +149,10 @@ function addEventToCartEdit() {
 }
 
 function addEventToForm() { 
-  customerName.addEventListener("change", function(e){ renderInvisibleError(e) });
-  customerPhone.addEventListener("change", function(e){ renderInvisibleError(e) });
-  customerEmail.addEventListener("change", function(e){ renderInvisibleError(e) });
-  customerAddress.addEventListener("change", function(e){ renderInvisibleError(e) });
+  customerName.addEventListener("change", function(e){ changeInvisibleError(e) });
+  customerPhone.addEventListener("change", function(e){ changeInvisibleError(e) });
+  customerEmail.addEventListener("change", function(e){ changeInvisibleError(e) });
+  customerAddress.addEventListener("change", function(e){ changeInvisibleError(e) });
   creatOrderBtn.addEventListener("click", function(e) { checkFormValidation(e) });
 }
 
@@ -174,22 +187,18 @@ function renderCart(data) {
   `;
 }
 
-function renderInvisibleError(e) {
-  const customerDom = document.getElementById(`${e.target.id}-message`);
-  const retValidation = validator.checkDataValidation(e.target.id, e.target.value);
-  const retInvisible = customerDom.getAttribute("class").includes('invisible');
-  if (retValidation && !retInvisible) {
-    // 驗證有過、現在有錯誤提示
-    customerDom.classList.add('invisible');
-    validator.setValidationFalseNum(-1);
-  } else if (!retValidation && retInvisible) {
-    // 驗證沒過、現在沒有錯誤提示
-    customerDom.classList.remove('invisible');
-    validator.setValidationFalseNum(1);
-  }
-  if (validator.getValidationFalseNum() === 0) {
-    submitBtn.removeAttribute('disabled');
-  }
+function renderShowSubmitBtn() {
+  submitBtn.removeAttribute('disabled');
+}
+
+function renderShowValidationError(customerDom) {
+  customerDom.classList.remove('invisible');
+  validator.setValidationFalseNum(1);
+}
+
+function renderHideValidationError(customerDom) {
+  customerDom.classList.add('invisible');
+  validator.setValidationFalseNum(-1);
 }
 
 //===== main ===== //
