@@ -3,7 +3,7 @@ import { getAdminRequest } from './api/dataService.js';
 import Chart from './component/c3.js';
 import { closeMenu, menuToggle } from './component/hamburgerMenu.js';
 import Order from './modules/order.js';
-import * as generateTemp from './template/renderTemplate.js';
+import * as generateTemp from './template/orderTemplate.js';
 
 //===== Module instance ===== //
 
