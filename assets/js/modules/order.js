@@ -93,6 +93,10 @@ export default class Order {
     return retData;
   }
 
+  processOrderSearch(value) {
+    return this._renderOrderData.filter(item => (item.user.name === value) || item.user.tel === value );
+  }
+
   _unixToMillisecond(itemTime) {
     return new Date(itemTime * 1000);
   }

@@ -18,6 +18,7 @@ const orderList = document.querySelector(".orderPage-list");
 const orderFilterSelect = document.querySelector(".orderFilterSelect");
 const orderSortSelect = document.querySelector(".orderSortSelect");
 const searchNum = document.querySelector(".searchNum");
+const orderSearch = document.querySelector(".orderSearch");
 // hamburger menu
 const menuOpenBtn = document.querySelector('.menuToggle');
 const menu = document.querySelector('.topBar-menu');
@@ -43,11 +44,31 @@ async function orderEditListener(method, orderRender=true, c3Render=false, args=
   }
 }
 
+function getOrderSearch(e) {
+  renderOrders(order.processOrderSearch(e.target.value));
+}
+
 //===== event type ===== //
 function addEventToHamburger() {
   menuOpenBtn.addEventListener('click', menuToggle);
   menu.addEventListener('click', closeMenu(menu));
 }
+
+function addEventToOrderSearch() { 
+  orderSearch.addEventListener("keyup", getOrderSearch);
+  // orderSearch.addEventListener("keydown", e => e.keyCode === 13 && e.target.blur());
+  orderSearch.addEventListener("keydown", function(e) {
+    e.keyCode === 13 && e.target.blur();
+  });
+  orderSearch.addEventListener("blur", function(e) {
+    !e.target.value && renderOrders(order.processOrderData(
+      order.getOriginData(), 
+      orderFilterSelect.value, 
+      orderSortSelect.value
+    ));
+  });
+}
+
 function addEventToOrderEdit(order) {
   orderSortSelect.addEventListener('change', e => renderOrders(order.processOrderData(
       order.getOriginData(), 
@@ -71,6 +92,7 @@ function addEventToOrderEdit(order) {
       'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && orderEditListener("deleteOrderAll", true, true),
       'orderStatus-not': e.target.getAttribute('class').includes('orderStatus-not') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
       'orderStatus-done': e.target.getAttribute('class').includes('orderStatus-done') && orderEditListener("changeOrderStatus", true, false, order.getOrderStatus(e.target.dataset.index)),
+      'orderSearch': e.target.getAttribute('class').includes('orderSearch') && addEventToOrderSearch(),
     };
     getOrderEditListener[e.target.getAttribute('class')];
   });
