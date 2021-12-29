@@ -36,9 +36,13 @@ function checkEditCartQuantityRequest(data) {
     });
   }
 }
-function checkEditCartQuantity(e, oldValue) {
+function checkEditCartQuantity(e, oldValue, oldEvent) {
+  e.target.blur();
   let diffNum = parseInt(e.target.value) - parseInt(oldValue);
-  if (!diffNum) { return }
+  if (!diffNum) { 
+    oldEvent.target.value = oldValue;
+    return ;
+  }
   checkEditCartQuantityRequest(cart.processEditCartQuantity(e, diffNum))
 }
 
@@ -122,9 +126,10 @@ function addEventToCartBtn() {
 }
 
 function addEventToInput(e) { 
+  let oldEvent = e;
   let oldValue = e.target.value;
   e.target.addEventListener('change', 
-  function(e){ checkEditCartQuantity(e, oldValue) }, {
+  function(e){ checkEditCartQuantity(e, oldValue, oldEvent) }, {
     once: true
   });
 }

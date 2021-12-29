@@ -49,7 +49,7 @@ export function tbodyCarts(totalPrice, id, index, category, imgUrl, title, price
         <td>NT$${price.toLocaleString()}</td>
         <td data-index=${index} style="font-size: 0;">
           <button class="material-icons quantity-sub">remove</button>
-          <input type="number" class="cart-quantity" placeholder="00" aria-label="01" value="${quantity}">
+          <input type="number" class="cart-quantity" placeholder="${quantity}" aria-label="01" value="${quantity}">
           <button class="material-icons quantity-add">add</button>
         </td>
         <td>NT$${totalPrice.toLocaleString()}</td>
