@@ -34,24 +34,22 @@ export default class Cart {
     return this._cartsData.carts[productIndex].id;
   }
 
-  processEditCartQuantity(e, diffNum=0) {
-    let itemIndex = e.target.parentNode.dataset.index;
-    let id = this.getProductId(itemIndex);
-    let quantity = this.getProductQuantity(diffNum, id, itemIndex);
-    return { id, quantity };
-  }
-
   getCartIndex(productId) {
     return this._searchProductIndexInCarts(productId);
   }
 
-  getProductQuantity(diffNum, productId, productIndex) {
+  getCartQuantity(diffNum, productId, productIndex) {
+    // In order to add cart, so need find the product index in carts.
     let retIndex = productIndex || this._searchProductIndexInCarts(productId);
-    if (retIndex === -1) {
-      return 1;
-    } else {
-      return this._cartsData.carts[retIndex].quantity + diffNum;
-    }
+    let retQuantity = retIndex === -1 ? 1 : this._cartsData.carts[retIndex].quantity + diffNum;
+    return retQuantity;
+  }
+
+  processEditCartQuantity(e, diffNum=0) {
+    let itemIndex = e.target.parentNode.dataset.index;
+    let id = this.getProductId(itemIndex);
+    let quantity = this.getCartQuantity(diffNum, id, itemIndex);
+    return { id, quantity };
   }
 
   processCategoriesFilter(category) {

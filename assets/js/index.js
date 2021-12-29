@@ -37,7 +37,6 @@ function checkEditCartQuantityRequest(data) {
   }
 }
 function checkEditCartQuantity(e, oldValue) {
-  console.log(parseInt(e.target.value), parseInt(oldValue));
   let diffNum = parseInt(e.target.value) - parseInt(oldValue);
   if (!diffNum) { return }
   checkEditCartQuantityRequest(cart.processEditCartQuantity(e, diffNum))
@@ -116,7 +115,7 @@ function addEventToCartBtn() {
     if(e.target.getAttribute('class') && e.target.getAttribute('class').includes("addCartBtn")) {
       productEditListener("addCartItem", {
         "productId": e.target.dataset.id,
-        "quantity": cart.getProductQuantity(1, e.target.dataset.id)
+        "quantity": cart.getCartQuantity(1, e.target.dataset.id)
       });
     }
   });

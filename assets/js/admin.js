@@ -5,6 +5,8 @@ import { closeMenu, menuToggle } from './component/hamburgerMenu.js';
 import Order from './modules/order.js';
 import * as generateTemp from './template/renderTemplate.js';
 
+//===== Module instance ===== //
+
 let c3 = new Chart();
 let order = new Order();
 
@@ -98,10 +100,13 @@ function renderOrders(data) {
   orderTable.innerHTML = tempOrderStr;
 }
 
-async function init() {
+//===== main ===== //
+async function main() {
+  // hamburger menu
+  addEventToHamburger();
+  // order
   await orderEditListener("getOrderListData", true, true);
   addEventToOrderEdit(order);
-  addEventToHamburger();
 }
 
-init();
+main();
