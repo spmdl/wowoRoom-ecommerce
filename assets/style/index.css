@@ -846,6 +846,15 @@ body {
 }
 /* FEATME: css */
 
+.cart-quantity-group {
+  font-size: 0;
+}
+
+.cart-quantity-group.loader input, .cart-quantity-group.loader button {
+  pointer-events: none;
+  color: #e7e7e7;
+}
+
 .cart-quantity::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }

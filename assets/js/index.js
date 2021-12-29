@@ -24,14 +24,15 @@ let cart = new Cart();
 let validator = new Validator();
 
 //===== Decorator ===== //
-function checkEditCartQuantityRequest(data) {
+function checkEditCartQuantityRequest(e, data) {
+  renderLoader(e);
   if (data.quantity) {
     productEditListener("editCartItem", {
       "id": data.id,
       "quantity": data.quantity
     });
   } else {
-    productEditListener("deleteCartItem", {
+    productEditListener(e,"deleteCartItem", {
       "id": data.id
     });
   }
@@ -43,7 +44,7 @@ function checkEditCartQuantity(e, oldValue, oldEvent) {
     oldEvent.target.value = oldValue;
     return ;
   }
-  checkEditCartQuantityRequest(cart.processEditCartQuantity(e, diffNum))
+  checkEditCartQuantityRequest(e, cart.processEditCartQuantity(e, diffNum))
 }
 
 function checkCartsEmpty(data) {
@@ -144,9 +145,9 @@ function addEventToCartEdit() {
     const cartEditListener = {
       'discardAllBtn': e.target.getAttribute('class').includes('discardAllBtn') && productEditListener("deleteAllCartList"),
       'discardBtn': e.target.getAttribute('class').includes('discardBtn') && productEditListener("deleteCartItem", {"id": e.target.dataset.id}),
-      'quantity-sub': e.target.getAttribute('class').includes('quantity-sub') && checkEditCartQuantityRequest(cart.processEditCartQuantity(e, -1)),
+      'quantity-sub': e.target.getAttribute('class').includes('quantity-sub') && checkEditCartQuantityRequest(e, cart.processEditCartQuantity(e, -1)),
       'cart-quantity': e.target.getAttribute('class').includes('cart-quantity') && addEventToInput(e),
-      'quantity-add': e.target.getAttribute('class').includes('quantity-add') && checkEditCartQuantityRequest(cart.processEditCartQuantity(e, 1)),
+      'quantity-add': e.target.getAttribute('class').includes('quantity-add') && checkEditCartQuantityRequest(e, cart.processEditCartQuantity(e, 1)),
     };
     cartEditListener[e.target.getAttribute('class')];
   });
@@ -203,6 +204,10 @@ function renderShowValidationError(customerDom) {
 function renderHideValidationError(customerDom) {
   customerDom.classList.add('invisible');
   validator.setValidationFalseNum(-1);
+}
+
+function renderLoader(e) {
+  e.target.parentNode.classList.add('loader');
 }
 
 //===== main ===== //
