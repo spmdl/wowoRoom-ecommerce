@@ -1,3 +1,6 @@
+// Just do two tasks
+// 1. data storage.
+// 2. data processing.
 export default class Cart {
   constructor() {
     this._cartsData = [];
@@ -19,6 +22,10 @@ export default class Cart {
     }
   }
 
+  getProductsData() {
+    return this._productsData;
+  }
+
   getCategories() {
     return this._categories;
   }
@@ -27,31 +34,27 @@ export default class Cart {
     return this._cartsData.carts[productIndex].id;
   }
 
-  getCartQuantity(productIndex) {
-    return this._cartsData.carts[productIndex].quantity;
+  processEditCartQuantity(e, diffNum=0) {
+    let itemIndex = e.target.parentNode.dataset.index;
+    let id = this.getProductId(itemIndex);
+    let quantity = this.getProductQuantity(diffNum, id, itemIndex);
+    return { id, quantity };
   }
 
-  getProductCategories(data) {
-    let productStr = "";
-    let categories = [];
-    data.forEach( item => {
-      if (!categories.includes(item.category)) {
-        categories.push(item.category);
-      }
-      productStr += generateProduct(item.id, item.images, item.title, item.origin_price, item.price);
-    });
+  getCartIndex(productId) {
+    return this._searchProductIndexInCarts(productId);
   }
 
-  getProductQuantity(productId, diffNum) {
-    let productIndex = this._searchProductIndexInCarts(productId);
-    if (productIndex === -1) {
+  getProductQuantity(diffNum, productId, productIndex) {
+    let retIndex = productIndex || this._searchProductIndexInCarts(productId);
+    if (retIndex === -1) {
       return 1;
     } else {
-      return this._cartsData.carts[productIndex].quantity + diffNum;
+      return this._cartsData.carts[retIndex].quantity + diffNum;
     }
   }
 
-  processCategoriesData(category) {
+  processCategoriesFilter(category) {
     let ret = this._productsData.filter((item) => item.category === category || category === "全部");
     return ret;
   }

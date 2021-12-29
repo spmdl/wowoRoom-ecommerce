@@ -1,4 +1,6 @@
-// data storage and process.
+// Just do two tasks
+// 1. data storage.
+// 2. data processing.
 
 export default class Order {
   constructor() {
@@ -71,6 +73,10 @@ export default class Order {
       "all": data,
       "false": data.filter(item => item.paid === false),
       "true": data.filter(item => item.paid === true),
+      "lastWeek": data.filter(item => {
+        const oldTime = this._unixToMillisecond(item.createdAt);
+        return this._diffDays(nowTime, oldTime, 7);
+      }),
       "lastMonth": data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
         return this._diffDays(nowTime, oldTime, 30);
