@@ -53,7 +53,7 @@ async function orderEditListener(method, orderRender=true, c3Render=false, args=
 }
 
 function getOrderSearch(e) {
-  renderOrders(order.processOrderSearch(e.target.value));
+  checkOrdersFilter(order.processOrderSearch(e.target.value.replace(/\s+|\s+$/g, '')));
 }
 
 //===== event type ===== //
@@ -93,7 +93,6 @@ function addEventToOrderEdit(order) {
       orderSearch.value,
     );
     searchNum.textContent = retData.length;
-    // renderOrders(retData);
     checkOrdersFilter(retData);
   });
   orderList.addEventListener("click", e => {

@@ -75,7 +75,6 @@ async function getProductList() {
 async function productEditListener(method, args={}) {
   try {
     let resData = await getCustomerRequest(method, args);
-    console.log(resData);
     cart.setCartsData(resData.data);
     checkCartsEmpty(resData.data);
   } catch (error) {

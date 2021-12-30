@@ -104,7 +104,7 @@ export default class Order {
   
   processOrderData(data, filterType, sortType, orderSearch) {
     let retData = [...data];
-    let filterData = this._processOrderFilter(retData, filterType, orderSearch);
+    let filterData = this._processOrderFilter(retData, filterType, orderSearch && orderSearch.replace(/\s+|\s+$/g, ''));
     retData = this._processOrderSort(filterData, sortType);
     this._setRenderData(retData);
     return retData;
