@@ -156,6 +156,9 @@ function addEventToInput(event) {
       return validation;
     })
   );
+  event.target.addEventListener('blur', function(e) {
+    checkEditCartQuantity(e, oldValue, e.target.value)
+  });
 }
 
 function addEventToProductSelect() { 
