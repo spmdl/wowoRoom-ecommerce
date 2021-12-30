@@ -29,7 +29,15 @@ function checkOrdersEmpty(data) {
     orderList.innerHTML = generateTemp.orderEmpty();
     return;
   }
-  renderOrders(order.processOrderData(data, orderFilterSelect.value, orderSortSelect.value));
+  renderOrders(order.processOrderData(data, orderFilterSelect.value, orderSortSelect.value, orderSearch.value));
+}
+
+function checkOrdersFilter(data) {
+  if (!data.length) {
+    orderTable.innerHTML = generateTemp.orderThead() + generateTemp.orderFilterEmpty();
+    return;
+  }
+  renderOrders(data);
 }
 
 //===== listener ===== //
@@ -73,17 +81,21 @@ function addEventToOrderEdit(order) {
   orderSortSelect.addEventListener('change', e => renderOrders(order.processOrderData(
       order.getOriginData(), 
       orderFilterSelect.value, 
-      e.target.value
+      e.target.value,
+      orderSearch.value
     ))
   );
   orderFilterSelect.addEventListener('change', e => {
+    console.log(orderSearch.value);
     let retData = order.processOrderData(
       order.getOriginData(), 
       e.target.value, 
-      orderSortSelect.value
+      orderSortSelect.value,
+      orderSearch.value,
     );
     searchNum.textContent = retData.length;
-    renderOrders(retData);
+    // renderOrders(retData);
+    checkOrdersFilter(retData);
   });
   orderList.addEventListener("click", e => {
     if (!e.target.getAttribute('class')) { return; }

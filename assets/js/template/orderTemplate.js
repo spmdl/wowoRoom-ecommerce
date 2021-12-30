@@ -10,6 +10,16 @@ export function orderEmpty() {
   `;
 }
 
+export function orderFilterEmpty() {
+  return `
+    <tr>
+      <td colspan="9">
+        <p class="empty-cart">沒有資料符合 QQ</p>
+      </td>
+    </tr>
+  `;
+}
+
 export function orderThead() {
   return `
     <thead>

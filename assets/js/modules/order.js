@@ -67,34 +67,51 @@ export default class Order {
     };
   }
 
-  _processOrderFilter(data, filterType) {
+  _processFilterAndSearch(item, orderSearch) {
+    if (orderSearch) {
+      return item.user.name.toLowerCase() === orderSearch.toLowerCase() || item.user.tel === orderSearch;
+    } else {
+      return true;
+    }
+  }
+
+  _processOrderFilter(data, filterType, orderSearch) {
     const nowTime = new Date()
     const orderFilter = {
-      "all": data,
-      "false": data.filter(item => item.paid === false),
-      "true": data.filter(item => item.paid === true),
-      "lastWeek": data.filter(item => {
+      "all": filterType == "all" && data.filter(item => this._processFilterAndSearch(item, orderSearch)),
+      "false": filterType == "false" && data.filter(item => item.paid === false && this._processFilterAndSearch(item, orderSearch)),
+      "true": filterType == "true" && data.filter(item => item.paid === true && this._processFilterAndSearch(item, orderSearch)),
+      "lastOneDay": filterType == "lastOneDay" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        return this._diffDays(nowTime, oldTime, 7);
+        let ret = this._diffDays(nowTime, oldTime, 1.5) && this._processFilterAndSearch(item, orderSearch);
+        return ret;
       }),
-      "lastMonth": data.filter(item => {
+      "lastTwoDay": filterType == "lastTwoDay" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        return this._diffDays(nowTime, oldTime, 30);
+        return this._diffDays(nowTime, oldTime, 2.5) && this._processFilterAndSearch(item, orderSearch);
+      }),
+      "lastWeek": filterType == "lastWeek" && data.filter(item => {
+        const oldTime = this._unixToMillisecond(item.createdAt);
+        return this._diffDays(nowTime, oldTime, 7.5) && this._processFilterAndSearch(item, orderSearch);
+      }),
+      "lastMonth": filterType == "lastMonth" && data.filter(item => {
+        const oldTime = this._unixToMillisecond(item.createdAt);
+        return this._diffDays(nowTime, oldTime, 30.5) && this._processFilterAndSearch(item, orderSearch);
       }),
     };
     return orderFilter[filterType];
   }
   
-  processOrderData(data, filterType, sortType) {
+  processOrderData(data, filterType, sortType, orderSearch) {
     let retData = [...data];
-    let filterData = this._processOrderFilter(retData, filterType);
+    let filterData = this._processOrderFilter(retData, filterType, orderSearch);
     retData = this._processOrderSort(filterData, sortType);
     this._setRenderData(retData);
     return retData;
   }
 
   processOrderSearch(value) {
-    return this._renderOrderData.filter(item => (item.user.name === value) || item.user.tel === value );
+    return this._renderOrderData.filter(item => (item.user.name.toLowerCase() === value.toLowerCase()) || item.user.tel === value );
   }
 
   _unixToMillisecond(itemTime) {
@@ -102,6 +119,6 @@ export default class Order {
   }
 
   _diffDays(nowTime, oldTime, difference) {
-    return parseInt(Math.abs((nowTime - oldTime) / (1000 * 60 * 60 * 24))) <= difference;
+    return Math.abs((nowTime - oldTime) / (1000 * 60 * 60 * 24)) <= difference;
   }
 }
