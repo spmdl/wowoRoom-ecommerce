@@ -86,7 +86,6 @@ function addEventToOrderEdit(order) {
     ))
   );
   orderFilterSelect.addEventListener('change', e => {
-    console.log(orderSearch.value);
     let retData = order.processOrderData(
       order.getOriginData(), 
       e.target.value, 
