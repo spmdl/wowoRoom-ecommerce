@@ -32,7 +32,7 @@ function checkEditCartQuantityRequest(e, data) {
       "quantity": data.quantity
     });
   } else {
-    productEditListener(e,"deleteCartItem", {
+    productEditListener("deleteCartItem", {
       "id": data.id
     });
   }
