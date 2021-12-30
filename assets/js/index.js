@@ -37,11 +37,11 @@ function checkEditCartQuantityRequest(e, data) {
     });
   }
 }
-function checkEditCartQuantity(e, oldValue, oldEvent) {
+function checkEditCartQuantity(e, oldValue, newValue) {
   e.target.blur();
-  let diffNum = parseInt(e.target.value) - parseInt(oldValue);
+  let diffNum = parseInt(newValue) - parseInt(oldValue);
   if (!diffNum) { 
-    oldEvent.target.value = oldValue;
+    e.target.value = oldValue;
     return ;
   }
   checkEditCartQuantityRequest(e, cart.processEditCartQuantity(e, diffNum))
@@ -75,6 +75,7 @@ async function getProductList() {
 async function productEditListener(method, args={}) {
   try {
     let resData = await getCustomerRequest(method, args);
+    console.log(resData);
     cart.setCartsData(resData.data);
     checkCartsEmpty(resData.data);
   } catch (error) {
@@ -126,13 +127,36 @@ function addEventToCartBtn() {
   });
 }
 
-function addEventToInput(e) { 
-  let oldEvent = e;
-  let oldValue = e.target.value;
-  e.target.addEventListener('change', 
-  function(e){ checkEditCartQuantity(e, oldValue, oldEvent) }, {
-    once: true
+// continuous filter input value
+function addEventToInputContinuous(e, oldValue, inputFilter) {
+  ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop"].forEach(function(event) {
+    e.target.addEventListener(event, function(inputEvent) {
+      if (inputFilter(this.value)) {
+        this.oldValue = this.value;
+        this.oldSelectionStart = this.selectionStart;
+        this.oldSelectionEnd = this.selectionEnd;
+      } else if (this.hasOwnProperty("oldValue")) {
+        this.value = this.oldValue;
+        this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+      } else {
+        this.value = "";
+      }
+      if (inputEvent.keyCode == 13) {
+        checkEditCartQuantity(inputEvent, oldValue, inputEvent.target.value)
+      }
+    });
   });
+}
+
+
+function addEventToInput(event) { 
+  let oldValue = event.target.value;
+  event.target.addEventListener('change', 
+    addEventToInputContinuous(event, oldValue, function(value) {
+      let validation = /^\d*$/.test(value) && (/^[1-9]\d*$/.test(value)) && (value === "" || parseInt(value) > 0);
+      return validation;
+    })
+  );
 }
 
 function addEventToProductSelect() { 
