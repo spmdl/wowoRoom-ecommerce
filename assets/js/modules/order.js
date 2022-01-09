@@ -83,20 +83,20 @@ export default class Order {
       "true": filterType == "true" && data.filter(item => item.paid === true && this._processFilterAndSearch(item, orderSearch)),
       "lastOneDay": filterType == "lastOneDay" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        let ret = this._diffDays(nowTime, oldTime, 1.5) && this._processFilterAndSearch(item, orderSearch);
+        let ret = this._diffHours(nowTime, oldTime, 24) && this._processFilterAndSearch(item, orderSearch);
         return ret;
       }),
       "lastTwoDay": filterType == "lastTwoDay" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        return this._diffDays(nowTime, oldTime, 2.5) && this._processFilterAndSearch(item, orderSearch);
+        return this._diffHours(nowTime, oldTime, 48) && this._processFilterAndSearch(item, orderSearch);
       }),
       "lastWeek": filterType == "lastWeek" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        return this._diffDays(nowTime, oldTime, 7.5) && this._processFilterAndSearch(item, orderSearch);
+        return this._diffHours(nowTime, oldTime, 168) && this._processFilterAndSearch(item, orderSearch);
       }),
       "lastMonth": filterType == "lastMonth" && data.filter(item => {
         const oldTime = this._unixToMillisecond(item.createdAt);
-        return this._diffDays(nowTime, oldTime, 30.5) && this._processFilterAndSearch(item, orderSearch);
+        return this._diffHours(nowTime, oldTime, 720) && this._processFilterAndSearch(item, orderSearch);
       }),
     };
     return orderFilter[filterType];
@@ -118,7 +118,9 @@ export default class Order {
     return new Date(itemTime * 1000);
   }
 
-  _diffDays(nowTime, oldTime, difference) {
-    return Math.abs((nowTime - oldTime) / (1000 * 60 * 60 * 24)) <= difference;
+  _diffHours(nowTime, oldTime, difference) {
+    // conversion difference of hours.
+    //I had difference of day, but formula(1000 * 60 * 60 * 24) more than expected 0.5.
+    return Math.abs((nowTime - oldTime) / (1000 * 60 * 60)) <= difference;
   }
 }

@@ -147,7 +147,6 @@ function addEventToInputContinuous(e, oldValue, inputFilter) {
   });
 }
 
-
 function addEventToInput(event) { 
   let oldValue = event.target.value;
   event.target.addEventListener('change', 
